@@ -15,10 +15,14 @@
         content="Friendzoné Reborn, une histoire interactive dont vous êtes le héros."
     >
 
-    <title>Friendzoné Reborn</title>
+    <title>
+        Friendzoné Reborn
+    </title>
 
 
-    <!-- Feuilles de style -->
+    <!--=================================================
+     FEUILLES DE STYLE
+    ==================================================-->
 
     <link
         rel="stylesheet"
@@ -46,10 +50,7 @@
 <body>
 
     <!--=================================================
-        FOND DYNAMIQUE DU JEU
-
-        Le moteur modifiera automatiquement
-        l'image de fond avec scene.fond.
+     FOND DYNAMIQUE DU JEU
     ==================================================-->
 
     <div
@@ -59,9 +60,7 @@
 
 
     <!--=================================================
-        VOILE SOMBRE SUR LE FOND
-
-        Il améliore la lisibilité des dialogues.
+     VOILE SOMBRE
     ==================================================-->
 
     <div
@@ -71,7 +70,7 @@
 
 
     <!--=================================================
-        TRANSITION NOIRE AU CHARGEMENT
+     TRANSITION NOIRE
     ==================================================-->
 
     <div
@@ -82,14 +81,14 @@
 
 
     <!--=================================================
-        CONTENEUR PRINCIPAL DU JEU
+     CONTENEUR PRINCIPAL
     ==================================================-->
 
     <div id="jeu">
 
 
         <!--=============================================
-            BARRE SUPÉRIEURE
+         ENTÊTE
         ==============================================-->
 
         <header id="entete">
@@ -126,7 +125,7 @@
 
 
         <!--=============================================
-            ZONE DE CONVERSATION
+         CONVERSATION
         ==============================================-->
 
         <main
@@ -138,8 +137,8 @@
             <div id="texte">
 
                 <!--
-                    Les bulles de dialogue seront
-                    ajoutées ici par dialogue.js.
+                    Les messages sont ajoutés
+                    automatiquement par dialogue.js.
                 -->
 
             </div>
@@ -148,7 +147,7 @@
 
 
         <!--=============================================
-            POPUP DES CHOIX
+         POPUP DES CHOIX
         ==============================================-->
 
         <div
@@ -172,8 +171,8 @@
                 <div id="choix">
 
                     <!--
-                        Les boutons seront ajoutés ici
-                        par choix.js.
+                        Les boutons sont ajoutés
+                        automatiquement par choix.js.
                     -->
 
                 </div>
@@ -184,7 +183,7 @@
 
 
         <!--=============================================
-            POPUP DES PARAMÈTRES
+         POPUP DES PARAMÈTRES
         ==============================================-->
 
         <div
@@ -205,24 +204,36 @@
                 </h2>
 
 
-                <!-- Volume de la musique -->
+                <!--=====================================
+                 AUDIO
+                ======================================-->
+
+                <h3>
+                    Audio
+                </h3>
+
+
+                <!--=====================================
+                 MUSIQUE
+                ======================================-->
 
                 <div class="groupe-parametre">
 
                     <label for="volumeMusique">
-
                         Volume de la musique
-
                     </label>
+
 
                     <input
                         id="volumeMusique"
                         type="range"
                         min="0"
-                        max="1"
-                        step="0.05"
-                        value="0.4"
+                        max="100"
+                        step="1"
+                        value="40"
+                        aria-label="Volume de la musique"
                     >
+
 
                     <output
                         id="valeurVolumeMusique"
@@ -234,24 +245,27 @@
                 </div>
 
 
-                <!-- Volume de l'ambiance -->
+                <!--=====================================
+                 AMBIANCE
+                ======================================-->
 
                 <div class="groupe-parametre">
 
                     <label for="volumeAmbiance">
-
                         Volume de l'ambiance
-
                     </label>
+
 
                     <input
                         id="volumeAmbiance"
                         type="range"
                         min="0"
-                        max="1"
-                        step="0.05"
-                        value="0.25"
+                        max="100"
+                        step="1"
+                        value="25"
+                        aria-label="Volume de l'ambiance"
                     >
+
 
                     <output
                         id="valeurVolumeAmbiance"
@@ -263,24 +277,27 @@
                 </div>
 
 
-                <!-- Volume des effets -->
+                <!--=====================================
+                 EFFETS
+                ======================================-->
 
                 <div class="groupe-parametre">
 
                     <label for="volumeEffets">
-
                         Volume des effets
-
                     </label>
+
 
                     <input
                         id="volumeEffets"
                         type="range"
                         min="0"
-                        max="1"
-                        step="0.05"
-                        value="0.7"
+                        max="100"
+                        step="1"
+                        value="70"
+                        aria-label="Volume des effets sonores"
                     >
+
 
                     <output
                         id="valeurVolumeEffets"
@@ -292,34 +309,71 @@
                 </div>
 
 
-                <!-- Intensité du voile sombre -->
+                <!--=====================================
+                 AFFICHAGE
+                ======================================-->
+
+                <h3>
+                    Affichage
+                </h3>
+
+
+                <!--=====================================
+                 ASSOMBRISSEMENT
+                ======================================-->
 
                 <div class="groupe-parametre">
 
-                    <label for="opaciteVoileFond">
-
+                    <label for="assombrissementFond">
                         Assombrissement du fond
-
                     </label>
 
+
                     <input
-                        id="opaciteVoileFond"
+                        id="assombrissementFond"
                         type="range"
                         min="0"
-                        max="0.8"
-                        step="0.05"
-                        value="0.35"
+                        max="100"
+                        step="1"
+                        value="35"
+                        aria-label="Assombrissement du fond"
                     >
 
+
                     <output
-                        id="valeurOpaciteVoileFond"
-                        for="opaciteVoileFond"
+                        id="valeurAssombrissementFond"
+                        for="assombrissementFond"
                     >
                         35 %
                     </output>
 
                 </div>
 
+
+                <!--=====================================
+                 INFORMATION
+                ======================================-->
+
+                <p>
+                    Les paramètres sont sauvegardés automatiquement.
+                </p>
+
+
+                <!--=====================================
+                 RÉINITIALISER
+                ======================================-->
+
+                <button
+                    id="reinitialiserParametres"
+                    type="button"
+                >
+                    Réinitialiser
+                </button>
+
+
+                <!--=====================================
+                 FERMER
+                ======================================-->
 
                 <button
                     id="fermerParametres"
@@ -332,17 +386,40 @@
 
         </div>
 
-
     </div>
 
 
     <!--=================================================
-        SCRIPTS
+     SCRIPTS
 
-        L'ordre de chargement est important.
+     ORDRE IMPORTANT :
+
+     audioManager
+         ↓
+     parametresManager
+         ↓
+     animationManager
+         ↓
+     sauvegardeManager
+         ↓
+     chapitresManager
+         ↓
+     conditions
+         ↓
+     dialogueManager
+         ↓
+     choixManager
+         ↓
+     succesManager
+         ↓
+     galerieManager
+         ↓
+     moteur
     ==================================================-->
 
     <script src="js/audioManager.js"></script>
+
+    <script src="js/parametres.js"></script>
 
     <script src="js/animation.js"></script>
 
@@ -356,11 +433,23 @@
 
     <script src="js/choix.js"></script>
 
+    <script src="js/succes.js"></script>
+
+    <script src="js/galerie.js"></script>
+
     <script src="js/moteur.js"></script>
 
 
     <!--=================================================
-        GESTION DU MENU ET DES PARAMÈTRES
+     INTERFACE DU JEU
+
+     Ce script gère uniquement :
+     - retour au menu ;
+     - ouverture des paramètres ;
+     - fermeture des paramètres.
+
+     Les paramètres eux-mêmes sont gérés
+     par parametres.js.
     ==================================================-->
 
     <script>
@@ -368,9 +457,9 @@
         "use strict";
 
 
-        /*=============================================
-            RÉCUPÉRATION DES ÉLÉMENTS
-        =============================================*/
+        /*=================================================
+         ÉLÉMENTS
+        =================================================*/
 
         const boutonRetourMenu =
             document.getElementById(
@@ -396,81 +485,44 @@
             );
 
 
-        const volumeMusique =
-            document.getElementById(
-                "volumeMusique"
-            );
-
-
-        const volumeAmbiance =
-            document.getElementById(
-                "volumeAmbiance"
-            );
-
-
-        const volumeEffets =
-            document.getElementById(
-                "volumeEffets"
-            );
-
-
-        const opaciteVoileFond =
-            document.getElementById(
-                "opaciteVoileFond"
-            );
-
-
-        const valeurVolumeMusique =
-            document.getElementById(
-                "valeurVolumeMusique"
-            );
-
-
-        const valeurVolumeAmbiance =
-            document.getElementById(
-                "valeurVolumeAmbiance"
-            );
-
-
-        const valeurVolumeEffets =
-            document.getElementById(
-                "valeurVolumeEffets"
-            );
-
-
-        const valeurOpaciteVoileFond =
-            document.getElementById(
-                "valeurOpaciteVoileFond"
-            );
-
-
-        const voileFond =
-            document.getElementById(
-                "voile-fond"
-            );
-
-
-        /*=============================================
-            FONCTIONS UTILITAIRES
-        =============================================*/
-
-        function convertirEnPourcentage(
-            valeur
-        ) {
-
-            return (
-                Math.round(
-                    Number(valeur) * 100
-                ) + " %"
-            );
-
-        }
-
+        /*=================================================
+         OUVRIR LES PARAMÈTRES
+        =================================================*/
 
         function ouvrirParametres() {
 
+            if (
+                !popupParametres
+            ) {
+
+                return;
+
+            }
+
+
+            /*---------------------------------------------
+             SYNCHRONISATION AVANT AFFICHAGE
+            ---------------------------------------------*/
+
+            if (
+                typeof parametresManager !==
+                    "undefined" &&
+                parametresManager !==
+                    null &&
+                typeof parametresManager
+                    .actualiserDepuisAudio ===
+                    "function"
+            ) {
+
+                parametresManager
+                    .actualiserDepuisAudio();
+
+            }
+
+
             popupParametres
-                .classList.add(
+                .classList
+                .add(
                     "ouverte"
                 );
 
@@ -482,23 +534,49 @@
                 );
 
 
-            boutonOuvrirParametres
-                .setAttribute(
-                    "aria-expanded",
-                    "true"
-                );
+            if (
+                boutonOuvrirParametres
+            ) {
+
+                boutonOuvrirParametres
+                    .setAttribute(
+                        "aria-expanded",
+                        "true"
+                    );
+
+            }
 
 
-            boutonFermerParametres
-                .focus();
+            if (
+                boutonFermerParametres
+            ) {
+
+                boutonFermerParametres
+                    .focus();
+
+            }
 
         }
 
+
+        /*=================================================
+         FERMER LES PARAMÈTRES
+        =================================================*/
 
         function fermerParametres() {
 
+            if (
+                !popupParametres
+            ) {
+
+                return;
+
+            }
+
+
             popupParametres
-                .classList.remove(
+                .classList
+                .remove(
                     "ouverte"
                 );
 
@@ -510,448 +588,300 @@
                 );
 
 
-            boutonOuvrirParametres
-                .setAttribute(
-                    "aria-expanded",
-                    "false"
-                );
+            if (
+                boutonOuvrirParametres
+            ) {
+
+                boutonOuvrirParametres
+                    .setAttribute(
+                        "aria-expanded",
+                        "false"
+                    );
 
 
-            boutonOuvrirParametres
-                .focus();
+                boutonOuvrirParametres
+                    .focus();
+
+            }
 
         }
 
 
-        function appliquerOpaciteVoile(
-            valeur
+        /*=================================================
+         RETOUR AU MENU
+        =================================================*/
+
+        if (
+            boutonRetourMenu
         ) {
 
-            const opacite =
-                Math.min(
-                    0.8,
-                    Math.max(
-                        0,
-                        Number(valeur)
-                    )
+            boutonRetourMenu
+                .addEventListener(
+                    "click",
+                    () => {
+
+                        const confirmation =
+                            window.confirm(
+                                "Retourner au menu principal ?"
+                            );
+
+
+                        if (
+                            !confirmation
+                        ) {
+
+                            return;
+
+                        }
+
+
+                        /*---------------------------------
+                         SAUVEGARDE
+                        ---------------------------------*/
+
+                        if (
+                            typeof moteur !==
+                                "undefined" &&
+                            moteur !==
+                                null &&
+                            typeof moteur
+                                .sauvegarder ===
+                                "function"
+                        ) {
+
+                            moteur
+                                .sauvegarder();
+
+                        }
+
+
+                        /*---------------------------------
+                         FERMER ÉVENTUELLEMENT UN MÉDIA
+                         DE GALERIE
+
+                         Normalement la visionneuse est
+                         uniquement utilisée dans index.html,
+                         mais cette sécurité permet à
+                         galerie.js de rester réutilisable.
+                        ---------------------------------*/
+
+                        if (
+                            typeof galerieManager !==
+                                "undefined" &&
+                            galerieManager !==
+                                null &&
+                            typeof galerieManager
+                                .fermerVisionneuse ===
+                                "function"
+                        ) {
+
+                            galerieManager
+                                .fermerVisionneuse();
+
+                        }
+
+
+                        /*---------------------------------
+                         AUDIO
+                        ---------------------------------*/
+
+                        if (
+                            typeof audioManager !==
+                                "undefined" &&
+                            audioManager !==
+                                null
+                        ) {
+
+                            if (
+                                typeof audioManager
+                                    .fadeOut ===
+                                    "function"
+                            ) {
+
+                                audioManager
+                                    .fadeOut(
+                                        800
+                                    );
+
+                            }
+
+
+                            if (
+                                typeof audioManager
+                                    .fadeOutAmbiance ===
+                                    "function"
+                            ) {
+
+                                audioManager
+                                    .fadeOutAmbiance(
+                                        600
+                                    );
+
+                            }
+                            else if (
+                                typeof audioManager
+                                    .arreterAmbiance ===
+                                    "function"
+                            ) {
+
+                                audioManager
+                                    .arreterAmbiance();
+
+                            }
+
+                        }
+
+
+                        /*---------------------------------
+                         REDIRECTION
+                        ---------------------------------*/
+
+                        const allerAuMenu =
+                            () => {
+
+                                window.location.href =
+                                    "index.html";
+
+                            };
+
+
+                        /*---------------------------------
+                         TRANSITION
+                        ---------------------------------*/
+
+                        if (
+                            typeof animationManager !==
+                                "undefined" &&
+                            animationManager !==
+                                null &&
+                            typeof animationManager
+                                .transitionVersNoir ===
+                                "function"
+                        ) {
+
+                            animationManager
+                                .transitionVersNoir(
+                                    allerAuMenu
+                                );
+
+
+                            return;
+
+                        }
+
+
+                        /*---------------------------------
+                         SECOURS
+                        ---------------------------------*/
+
+                        allerAuMenu();
+
+                    }
                 );
-
-
-            voileFond.style.background =
-                `rgba(0, 0, 0, ${opacite})`;
-
-
-            valeurOpaciteVoileFond.textContent =
-                convertirEnPourcentage(
-                    opacite
-                );
-
-
-            localStorage.setItem(
-                "opaciteVoileFond",
-                String(opacite)
-            );
 
         }
 
 
-        /*=============================================
-            RETOUR AU MENU
-        =============================================*/
-
-        boutonRetourMenu
-            .addEventListener(
-                "click",
-                () => {
-
-                    const confirmation =
-                        window.confirm(
-                            "Retourner au menu principal ?"
-                        );
-
-
-                    if (!confirmation) {
-
-                        return;
-
-                    }
-
-
-                    if (
-                        typeof moteur !==
-                            "undefined" &&
-                        typeof moteur
-                            .sauvegarder ===
-                            "function"
-                    ) {
-
-                        moteur.sauvegarder();
-
-                    }
-
-
-                    if (
-                        typeof audioManager !==
-                            "undefined"
-                    ) {
-
-                        if (
-                            typeof audioManager
-                                .fadeOut ===
-                                "function"
-                        ) {
-
-                            audioManager.fadeOut(
-                                800
-                            );
-
-                        }
-
-
-                        if (
-                            typeof audioManager
-                                .fadeOutAmbiance ===
-                                "function"
-                        ) {
-
-                            audioManager
-                                .fadeOutAmbiance(
-                                    600
-                                );
-
-                        }
-                        else if (
-                            typeof audioManager
-                                .arreterAmbiance ===
-                                "function"
-                        ) {
-
-                            audioManager
-                                .arreterAmbiance();
-
-                        }
-
-                    }
-
-
-                    const allerAuMenu =
-                        () => {
-
-                            window.location.href =
-                                "index.html";
-
-                        };
-
-
-                    if (
-                        typeof animationManager !==
-                            "undefined" &&
-                        typeof animationManager
-                            .transitionVersNoir ===
-                            "function"
-                    ) {
-
-                        animationManager
-                            .transitionVersNoir(
-                                allerAuMenu
-                            );
-
-                        return;
-
-                    }
-
-
-                    allerAuMenu();
-
-                }
-            );
-
-
-        /*=============================================
-            OUVERTURE ET FERMETURE DES PARAMÈTRES
-        =============================================*/
-
-        boutonOuvrirParametres
-            .addEventListener(
-                "click",
-                ouvrirParametres
-            );
-
-
-        boutonFermerParametres
-            .addEventListener(
-                "click",
-                fermerParametres
-            );
-
-
-        popupParametres
-            .addEventListener(
-                "click",
-                event => {
-
-                    if (
-                        event.target ===
-                        popupParametres
-                    ) {
-
-                        fermerParametres();
-
-                    }
-
-                }
-            );
-
-
-        document
-            .addEventListener(
-                "keydown",
-                event => {
-
-                    if (
-                        event.key ===
-                            "Escape" &&
-                        popupParametres
-                            .classList
-                            .contains(
-                                "ouverte"
-                            )
-                    ) {
-
-                        fermerParametres();
-
-                    }
-
-                }
-            );
-
-
-        /*=============================================
-            VOLUME DE LA MUSIQUE
-        =============================================*/
-
-        volumeMusique
-            .addEventListener(
-                "input",
-                event => {
-
-                    const valeur =
-                        Number(
-                            event.target.value
-                        );
-
-
-                    valeurVolumeMusique.textContent =
-                        convertirEnPourcentage(
-                            valeur
-                        );
-
-
-                    if (
-                        typeof audioManager !==
-                            "undefined" &&
-                        typeof audioManager
-                            .setVolumeMusique ===
-                            "function"
-                    ) {
-
-                        audioManager
-                            .setVolumeMusique(
-                                valeur
-                            );
-
-                    }
-
-                }
-            );
-
-
-        /*=============================================
-            VOLUME DE L'AMBIANCE
-        =============================================*/
-
-        volumeAmbiance
-            .addEventListener(
-                "input",
-                event => {
-
-                    const valeur =
-                        Number(
-                            event.target.value
-                        );
-
-
-                    valeurVolumeAmbiance.textContent =
-                        convertirEnPourcentage(
-                            valeur
-                        );
-
-
-                    if (
-                        typeof audioManager !==
-                            "undefined" &&
-                        typeof audioManager
-                            .setVolumeAmbiance ===
-                            "function"
-                    ) {
-
-                        audioManager
-                            .setVolumeAmbiance(
-                                valeur
-                            );
-
-                    }
-
-                }
-            );
-
-
-        /*=============================================
-            VOLUME DES EFFETS
-        =============================================*/
-
-        volumeEffets
-            .addEventListener(
-                "input",
-                event => {
-
-                    const valeur =
-                        Number(
-                            event.target.value
-                        );
-
-
-                    valeurVolumeEffets.textContent =
-                        convertirEnPourcentage(
-                            valeur
-                        );
-
-
-                    if (
-                        typeof audioManager !==
-                            "undefined" &&
-                        typeof audioManager
-                            .setVolumeEffets ===
-                            "function"
-                    ) {
-
-                        audioManager
-                            .setVolumeEffets(
-                                valeur
-                            );
-
-                    }
-
-                }
-            );
-
-
-        /*=============================================
-            ASSOMBRISSEMENT DU FOND
-        =============================================*/
-
-        opaciteVoileFond
-            .addEventListener(
-                "input",
-                event => {
-
-                    appliquerOpaciteVoile(
-                        event.target.value
-                    );
-
-                }
-            );
-
-
-        /*=============================================
-            CHARGEMENT DES PARAMÈTRES ENREGISTRÉS
-        =============================================*/
-
-        window.addEventListener(
-            "DOMContentLoaded",
-            () => {
-
-                const opaciteEnregistree =
-                    localStorage.getItem(
-                        "opaciteVoileFond"
-                    );
-
-
-                if (
-                    opaciteEnregistree !==
-                    null
-                ) {
-
-                    opaciteVoileFond.value =
-                        opaciteEnregistree;
-
-                }
-
-
-                appliquerOpaciteVoile(
-                    opaciteVoileFond.value
+        /*=================================================
+         OUVERTURE DES PARAMÈTRES
+        =================================================*/
+
+        if (
+            boutonOuvrirParametres
+        ) {
+
+            boutonOuvrirParametres
+                .addEventListener(
+                    "click",
+                    ouvrirParametres
                 );
 
+        }
+
+
+        /*=================================================
+         FERMETURE DES PARAMÈTRES
+        =================================================*/
+
+        if (
+            boutonFermerParametres
+        ) {
+
+            boutonFermerParametres
+                .addEventListener(
+                    "click",
+                    fermerParametres
+                );
+
+        }
+
+
+        /*=================================================
+         CLIC SUR LE FOND
+        =================================================*/
+
+        if (
+            popupParametres
+        ) {
+
+            popupParametres
+                .addEventListener(
+                    "click",
+                    event => {
+
+                        if (
+                            event.target ===
+                            popupParametres
+                        ) {
+
+                            fermerParametres();
+
+                        }
+
+                    }
+                );
+
+        }
+
+
+        /*=================================================
+         ÉCHAP
+        =================================================*/
+
+        document.addEventListener(
+            "keydown",
+            event => {
 
                 if (
-                    typeof audioManager !==
-                        "undefined"
+                    event.key !==
+                    "Escape"
                 ) {
 
-                    if (
-                        Number.isFinite(
-                            audioManager.volumeMusique
-                        )
-                    ) {
-
-                        volumeMusique.value =
-                            audioManager.volumeMusique;
-
-                    }
-
-
-                    if (
-                        Number.isFinite(
-                            audioManager.volumeAmbiance
-                        )
-                    ) {
-
-                        volumeAmbiance.value =
-                            audioManager.volumeAmbiance;
-
-                    }
-
-
-                    if (
-                        Number.isFinite(
-                            audioManager.volumeEffets
-                        )
-                    ) {
-
-                        volumeEffets.value =
-                            audioManager.volumeEffets;
-
-                    }
+                    return;
 
                 }
 
 
-                valeurVolumeMusique.textContent =
-                    convertirEnPourcentage(
-                        volumeMusique.value
-                    );
+                if (
+                    !popupParametres
+                ) {
+
+                    return;
+
+                }
 
 
-                valeurVolumeAmbiance.textContent =
-                    convertirEnPourcentage(
-                        volumeAmbiance.value
-                    );
+                if (
+                    popupParametres
+                        .classList
+                        .contains(
+                            "ouverte"
+                        )
+                ) {
 
+                    fermerParametres();
 
-                valeurVolumeEffets.textContent =
-                    convertirEnPourcentage(
-                        volumeEffets.value
-                    );
+                }
 
             }
         );
