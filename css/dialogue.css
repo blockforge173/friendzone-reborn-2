@@ -1,5 +1,5 @@
 /* ==========================================
-   FRIENDZONÉ REBORN 2
+   FRIENDZONÉ REBORN
    dialogue.css
 ========================================== */
 
@@ -310,20 +310,162 @@ système
 
 
 /*===========================================
-ieutenant Morel
+Lieutenant Morel
 ==========================================*/
-.lieutenantMorel{
+.lieutenant-morel{
     align-self:flex-start;
 }
 
-.lieutenantMorel .nom{
+.lieutenant-morel .nom{
     color:#ff7eb6;
 }
 
-.lieutenantMorel .bulle{
+.lieutenant-morel .bulle{
     background:#ff7eb6;
     color:#ffffff;
     border-bottom-left-radius:6px;
+}
+
+
+
+/* ==========================================
+   Inconnu
+========================================== */
+
+.inconnu{
+    align-self:flex-start;
+}
+
+.inconnu .nom{
+    color:#d6d6d6;
+}
+
+.inconnu .bulle{
+    background:#343434;
+    color:#ffffff;
+    border:1px solid rgba(255,255,255,.10);
+    border-bottom-left-radius:6px;
+}
+
+
+/* ==========================================
+   Employé / Employée
+========================================== */
+
+.employee{
+    align-self:flex-start;
+}
+
+.employee .nom{
+    color:#8dd9d0;
+}
+
+.employee .bulle{
+    background:#287f78;
+    color:#ffffff;
+    border-bottom-left-radius:6px;
+}
+
+
+/* ==========================================
+   Témoin
+========================================== */
+
+.temoin{
+    align-self:flex-start;
+}
+
+.temoin .nom{
+    color:#e7c98f;
+}
+
+.temoin .bulle{
+    background:#8a6731;
+    color:#ffffff;
+    border-bottom-left-radius:6px;
+}
+
+
+/* ==========================================
+   Enquêteur
+========================================== */
+
+.enqueteur{
+    align-self:flex-start;
+}
+
+.enqueteur .nom{
+    color:#9fc5e8;
+}
+
+.enqueteur .bulle{
+    background:#365f82;
+    color:#ffffff;
+    border-bottom-left-radius:6px;
+}
+
+
+/* ==========================================
+   Silhouette
+========================================== */
+
+.silhouette{
+    align-self:flex-start;
+}
+
+.silhouette .nom{
+    color:#b8b8b8;
+}
+
+.silhouette .bulle{
+    background:#1d1d1d;
+    color:#eeeeee;
+    border:1px solid rgba(255,255,255,.08);
+    border-bottom-left-radius:6px;
+}
+
+
+/* ==========================================
+   Élève
+========================================== */
+
+.eleve{
+    align-self:flex-start;
+}
+
+.eleve .nom{
+    color:#c7b7ff;
+}
+
+.eleve .bulle{
+    background:#6551a5;
+    color:#ffffff;
+    border-bottom-left-radius:6px;
+}
+
+
+/* ==========================================
+   SMS / Téléphone
+========================================== */
+
+.sms,
+.telephone{
+    align-self:center;
+    max-width:90%;
+}
+
+.sms .nom,
+.telephone .nom{
+    color:#9fd8ff;
+    text-align:center;
+}
+
+.sms .bulle,
+.telephone .bulle{
+    background:rgba(20,35,50,.92);
+    color:#ffffff;
+    border:1px solid rgba(120,190,255,.30);
+    border-radius:12px;
 }
 
 
