@@ -5,87 +5,210 @@
 
     <meta charset="UTF-8">
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-    <title>Friendzoné Reborn</title>
+    <meta
+        name="description"
+        content="Friendzoné Reborn, une histoire interactive dont vous êtes le héros."
+    >
 
-    <link rel="stylesheet" href="css/menu.css">
+    <title>
+        Friendzoné Reborn
+    </title>
+
+
+    <!--=================================================
+     FEUILLE DE STYLE DU MENU
+    ==================================================-->
+
+    <link
+        rel="stylesheet"
+        href="css/menu.css"
+    >
 
 </head>
 
+
 <body>
 
-    <div id="background"></div>
+    <!--=================================================
+     FOND DU MENU
+    ==================================================-->
 
-    <div id="overlay"></div>
+    <div
+        id="background"
+        aria-hidden="true"
+    ></div>
+
+
+    <!--=================================================
+     VOILE SOMBRE
+    ==================================================-->
+
+    <div
+        id="overlay"
+        aria-hidden="true"
+    ></div>
+
+
+    <!--=================================================
+     MENU PRINCIPAL
+    ==================================================-->
 
     <main id="menu">
 
+        <!--=============================================
+         LOGO
+        ==============================================-->
+
         <div id="logo">
 
-            <h1>FRIENDZONÉ</h1>
+            <h1>
+                FRIENDZONÉ
+            </h1>
 
-            <h2>REBORN 2</h2>
+            <h2>
+                REBORN
+            </h2>
 
-            <p>Une histoire dont vous êtes le héros</p>
+            <p>
+                Une histoire dont vous êtes le héros
+            </p>
 
         </div>
 
+
+        <!--=============================================
+         NAVIGATION
+        ==============================================-->
+
         <nav>
 
-            <button id="nouvellePartie">
-                ▶ Nouvelle partie
+            <button
+                id="nouvellePartie"
+                type="button"
+            >
+                Nouvelle partie ▶
             </button>
 
-            <button id="continuer">
-                ▶ Continuer
+
+            <button
+                id="continuer"
+                type="button"
+            >
+                Continuer ▶
             </button>
 
-            <button id="charger">
-                ▶ Charger une sauvegarde
+
+            <button
+                id="charger"
+                type="button"
+            >
+                Charger une sauvegarde ▶
             </button>
 
-            <button id="galerie">
-                ▶ Galerie
+
+            <button
+                id="galerie"
+                type="button"
+            >
+                Galerie ▶
             </button>
 
-            <button id="succes">
-                ▶ Succès
+
+            <button
+                id="succes"
+                type="button"
+            >
+                Succès ▶
             </button>
 
-            <button id="parametres">
-                ▶ Paramètres
+
+            <button
+                id="parametres"
+                type="button"
+            >
+                Paramètres ▶
             </button>
 
-            <button id="credits">
-                ▶ Crédits
+
+            <button
+                id="credits"
+                type="button"
+            >
+                Crédits ▶
             </button>
 
-            <button id="quitter">
-                ▶ Quitter
+
+            <button
+                id="quitter"
+                type="button"
+            >
+                Quitter ▶
             </button>
 
         </nav>
 
+
+        <!--=============================================
+         VERSION
+        ==============================================-->
+
         <footer>
 
-            <p>Version 0.4 Alpha</p>
+            <p>
+                Version 0.5 Alpha
+            </p>
 
         </footer>
 
     </main>
 
-    <!-- Fenêtre des paramètres -->
 
-    <div id="fenetreParametres" class="popup">
+    <!--=================================================
+     FENÊTRE MULTI-SAUVEGARDE
+    ==================================================-->
 
-        <div class="contenuPopup">
+    <div
+        id="fenetreSauvegardes"
+        class="popup"
+        aria-hidden="true"
+    >
 
-            <h2>Paramètres</h2>
+        <div
+            class="contenuPopup contenuSauvegardes"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="titreFenetreSauvegardes"
+        >
 
-            <p>Disponible prochainement.</p>
+            <h2 id="titreFenetreSauvegardes">
+                Sauvegardes
+            </h2>
 
-            <button onclick="fermerPopup()">
+
+            <p id="descriptionFenetreSauvegardes">
+                Choisis un emplacement.
+            </p>
+
+
+            <div id="listeSauvegardes">
+
+                <!--
+                    Les emplacements sont générés
+                    automatiquement par menu.js.
+                -->
+
+            </div>
+
+
+            <button
+                id="fermerSauvegardes"
+                type="button"
+            >
                 Fermer
             </button>
 
@@ -93,17 +216,401 @@
 
     </div>
 
-    <!-- Fenêtre Galerie -->
 
-    <div id="fenetreGalerie" class="popup">
+    <!--=================================================
+     FENÊTRE DES PARAMÈTRES
+    ==================================================-->
 
-        <div class="contenuPopup">
+    <div
+        id="fenetreParametres"
+        class="popup"
+        aria-hidden="true"
+    >
 
-            <h2>Galerie</h2>
+        <div
+            class="contenuPopup contenuParametres"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="titreParametres"
+        >
 
-            <p>Disponible prochainement.</p>
+            <h2 id="titreParametres">
+                Paramètres
+            </h2>
 
-            <button onclick="fermerPopup()">
+
+            <!--=========================================
+             AUDIO
+            ==========================================-->
+
+            <div class="groupe-parametres">
+
+                <h3>
+                    Audio
+                </h3>
+
+
+                <!--=====================================
+                 MUSIQUE
+                ======================================-->
+
+                <div class="parametre-ligne">
+
+                    <div class="parametre-entete">
+
+                        <label for="volumeMusique">
+                            Musique
+                        </label>
+
+
+                        <span
+                            id="valeurVolumeMusique"
+                            class="parametre-valeur"
+                        >
+                            40 %
+                        </span>
+
+                    </div>
+
+
+                    <input
+                        id="volumeMusique"
+                        class="parametre-slider"
+                        type="range"
+                        min="0"
+                        max="100"
+                        step="1"
+                        value="40"
+                        aria-label="Volume de la musique"
+                    >
+
+                </div>
+
+
+                <!--=====================================
+                 AMBIANCE
+                ======================================-->
+
+                <div class="parametre-ligne">
+
+                    <div class="parametre-entete">
+
+                        <label for="volumeAmbiance">
+                            Ambiance
+                        </label>
+
+
+                        <span
+                            id="valeurVolumeAmbiance"
+                            class="parametre-valeur"
+                        >
+                            25 %
+                        </span>
+
+                    </div>
+
+
+                    <input
+                        id="volumeAmbiance"
+                        class="parametre-slider"
+                        type="range"
+                        min="0"
+                        max="100"
+                        step="1"
+                        value="25"
+                        aria-label="Volume de l'ambiance"
+                    >
+
+                </div>
+
+
+                <!--=====================================
+                 EFFETS
+                ======================================-->
+
+                <div class="parametre-ligne">
+
+                    <div class="parametre-entete">
+
+                        <label for="volumeEffets">
+                            Effets sonores
+                        </label>
+
+
+                        <span
+                            id="valeurVolumeEffets"
+                            class="parametre-valeur"
+                        >
+                            70 %
+                        </span>
+
+                    </div>
+
+
+                    <input
+                        id="volumeEffets"
+                        class="parametre-slider"
+                        type="range"
+                        min="0"
+                        max="100"
+                        step="1"
+                        value="70"
+                        aria-label="Volume des effets sonores"
+                    >
+
+                </div>
+
+            </div>
+
+
+            <!--=========================================
+             AFFICHAGE
+            ==========================================-->
+
+            <div class="groupe-parametres">
+
+                <h3>
+                    Affichage
+                </h3>
+
+
+                <div class="parametre-ligne">
+
+                    <div class="parametre-entete">
+
+                        <label for="assombrissementFond">
+                            Assombrissement du fond
+                        </label>
+
+
+                        <span
+                            id="valeurAssombrissementFond"
+                            class="parametre-valeur"
+                        >
+                            35 %
+                        </span>
+
+                    </div>
+
+
+                    <input
+                        id="assombrissementFond"
+                        class="parametre-slider"
+                        type="range"
+                        min="0"
+                        max="100"
+                        step="1"
+                        value="35"
+                        aria-label="Assombrissement du fond"
+                    >
+
+                </div>
+
+            </div>
+
+
+            <p class="parametre-information">
+                Les paramètres sont sauvegardés automatiquement.
+            </p>
+
+
+            <div class="parametres-actions">
+
+                <button
+                    id="reinitialiserParametres"
+                    type="button"
+                >
+                    Réinitialiser
+                </button>
+
+
+                <button
+                    type="button"
+                    onclick="fermerPopup()"
+                >
+                    Fermer
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!--=================================================
+     FENÊTRE GALERIE MULTIMÉDIA
+    ==================================================-->
+
+    <div
+        id="fenetreGalerie"
+        class="popup"
+        aria-hidden="true"
+    >
+
+        <div
+            class="contenuPopup contenuGalerie"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="titreGalerie"
+        >
+
+            <!--=========================================
+             TITRE
+            ==========================================-->
+
+            <h2 id="titreGalerie">
+                Galerie
+            </h2>
+
+
+            <!--=========================================
+             PROGRESSION
+            ==========================================-->
+
+            <div
+                id="progressionGalerie"
+                class="galerie-progression"
+            >
+                0 / 0 médias — 0 %
+            </div>
+
+
+            <!--=========================================
+             FILTRES
+            ==========================================-->
+
+            <div
+                id="filtresGalerie"
+                class="galerie-filtres"
+                aria-label="Filtres de la galerie"
+            >
+
+                <!--
+                    Générés automatiquement
+                    par galerie.js.
+                -->
+
+            </div>
+
+
+            <!--=========================================
+             LISTE DES MÉDIAS
+            ==========================================-->
+
+            <div id="listeGalerie">
+
+                <!--
+                    Les médias sont générés
+                    automatiquement par galerieManager.
+                -->
+
+            </div>
+
+
+            <!--=========================================
+             INFORMATION RÉINITIALISATION
+            ==========================================-->
+
+            <p class="galerie-information-reinitialisation">
+
+                Réinitialiser la galerie supprimera uniquement
+                les médias débloqués.
+
+                Les sauvegardes, les succès et les paramètres
+                seront conservés.
+
+            </p>
+
+
+            <!--=========================================
+             ACTIONS GALERIE
+            ==========================================-->
+
+            <div class="galerie-actions">
+
+                <button
+                    id="reinitialiserGalerie"
+                    type="button"
+                >
+                    Réinitialiser la galerie
+                </button>
+
+
+                <button
+                    type="button"
+                    onclick="fermerPopup()"
+                >
+                    Fermer
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!--=================================================
+     VISIONNEUSE DE LA GALERIE
+    ==================================================-->
+
+    <div
+        id="visionneuseGalerie"
+        class="popup visionneuse-galerie"
+        aria-hidden="true"
+    >
+
+        <div
+            class="contenuPopup visionneuse-galerie-contenu"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="visionneuseGalerieTitre"
+        >
+
+            <!--=========================================
+             TITRE
+            ==========================================-->
+
+            <h2 id="visionneuseGalerieTitre">
+                Média
+            </h2>
+
+
+            <!--=========================================
+             CONTENU
+            ==========================================-->
+
+            <div id="visionneuseGalerieContenu">
+
+                <!--
+                    galerie.js ajoute ici :
+                    - <img>
+                    - <audio>
+                    - <video>
+                -->
+
+            </div>
+
+
+            <!--=========================================
+             DESCRIPTION
+            ==========================================-->
+
+            <p
+                id="visionneuseGalerieDescription"
+                class="visionneuse-galerie-description"
+            ></p>
+
+
+            <!--=========================================
+             FERMETURE
+            ==========================================-->
+
+            <button
+                id="fermerVisionneuseGalerie"
+                type="button"
+            >
                 Fermer
             </button>
 
@@ -111,43 +618,139 @@
 
     </div>
 
-    <!-- Fenêtre Succès -->
 
-    <div id="fenetreSucces" class="popup">
+    <!--=================================================
+     FENÊTRE SUCCÈS
+    ==================================================-->
 
-        <div class="contenuPopup">
+    <div
+        id="fenetreSucces"
+        class="popup"
+        aria-hidden="true"
+    >
 
-            <h2>Succès</h2>
+        <div
+            class="contenuPopup contenuSucces"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="titreSucces"
+        >
 
-            <p>Disponible prochainement.</p>
+            <!--=========================================
+             TITRE
+            ==========================================-->
 
-            <button onclick="fermerPopup()">
-                Fermer
-            </button>
+            <h2 id="titreSucces">
+                Succès
+            </h2>
+
+
+            <!--=========================================
+             LISTE DES SUCCÈS
+            ==========================================-->
+
+            <div id="listeSucces">
+
+                <!--
+                    Les succès sont générés
+                    automatiquement par succesManager.
+                -->
+
+            </div>
+
+
+            <!--=========================================
+             INFORMATION RÉINITIALISATION
+            ==========================================-->
+
+            <p class="succes-information-reinitialisation">
+
+                Réinitialiser les succès supprimera uniquement
+                leur progression.
+
+                Les sauvegardes, la galerie et les paramètres
+                seront conservés.
+
+            </p>
+
+
+            <!--=========================================
+             ACTIONS SUCCÈS
+            ==========================================-->
+
+            <div class="succes-actions">
+
+                <button
+                    id="reinitialiserSucces"
+                    type="button"
+                >
+                    Réinitialiser les succès
+                </button>
+
+
+                <button
+                    type="button"
+                    onclick="fermerPopup()"
+                >
+                    Fermer
+                </button>
+
+            </div>
 
         </div>
 
     </div>
 
-    <!-- Fenêtre Crédits -->
 
-    <div id="fenetreCredits" class="popup">
+    <!--=================================================
+     FENÊTRE CRÉDITS
+    ==================================================-->
 
-        <div class="contenuPopup">
+    <div
+        id="fenetreCredits"
+        class="popup"
+        aria-hidden="true"
+    >
 
-            <h2>Crédits</h2>
+        <div
+            class="contenuPopup"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="titreCredits"
+        >
 
-            <p>Développement</p>
+            <h2 id="titreCredits">
+                Crédits
+            </h2>
 
-            <p>Blockforge173</p>
+
+            <p>
+                Développement
+            </p>
+
+
+            <p>
+                Blockforge173
+            </p>
+
 
             <br>
 
-            <p>Friendzoné Reborn 2</p>
 
-            <p>Version Alpha 0.1</p>
+            <p>
+                Friendzoné Reborn
+            </p>
 
-            <button onclick="fermerPopup()">
+
+            <p>
+                Version Alpha 0.5
+            </p>
+
+
+            <button
+                type="button"
+                onclick="fermerPopup()"
+            >
                 Fermer
             </button>
 
@@ -155,11 +758,46 @@
 
     </div>
 
-    <div id="transition"></div>
+
+    <!--=================================================
+     TRANSITION
+    ==================================================-->
+
+    <div
+        id="transition"
+        aria-hidden="true"
+    ></div>
+
+
+    <!--=================================================
+     SCRIPTS
+
+     ORDRE IMPORTANT :
+
+     audioManager
+         ↓
+     sauvegardeManager
+         ↓
+     succesManager
+         ↓
+     parametresManager
+         ↓
+     galerieManager
+         ↓
+     menu
+    ==================================================-->
 
     <script src="js/audioManager.js"></script>
-    
-<script src="js/menu.js"></script>
+
+    <script src="js/sauvegarde.js"></script>
+
+    <script src="js/succes.js"></script>
+
+    <script src="js/parametres.js"></script>
+
+    <script src="js/galerie.js"></script>
+
+    <script src="js/menu.js"></script>
 
 </body>
 
