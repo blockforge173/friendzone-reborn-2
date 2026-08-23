@@ -2,7 +2,7 @@
 
 /*=========================================================
     FRIENDZONÉ REBORN
-    dialogues.js
+    dialogue.js
 
     Gestion :
     - des dialogues ;
@@ -13,7 +13,8 @@
     - des succès ;
     - des choix importants ;
     - des nouvelles informations ;
-    - des fonds définis dans les dialogues.
+    - des fonds définis dans les dialogues ;
+    - de la galerie multimédia.
 =========================================================*/
 
 const dialogueManager = {
@@ -96,7 +97,7 @@ const dialogueManager = {
         if (!this.conteneur) {
 
             console.error(
-                "dialogues.js : l'élément #texte est introuvable."
+                "dialogue.js : l'élément #texte est introuvable."
             );
 
             return;
@@ -129,6 +130,209 @@ const dialogueManager = {
                 "function"
 
         );
+
+    },
+
+
+    /*=====================================================
+        VÉRIFIER GALERIE MANAGER
+    =====================================================*/
+
+    galerieDisponible() {
+
+        return (
+
+            typeof galerieManager !==
+                "undefined" &&
+
+            galerieManager !== null &&
+
+            typeof galerieManager
+                .debloquer ===
+                "function"
+
+        );
+
+    },
+
+
+    /*=====================================================
+        GÉRER LA GALERIE D'UN DIALOGUE
+
+        Formats acceptés :
+
+        "galerie": "idMedia"
+
+        ou :
+
+        "galerie": [
+            "idMedia1",
+            "idMedia2"
+        ]
+
+        Le moteur garde la priorité afin que la logique
+        de déblocage reste centralisée.
+    =====================================================*/
+
+    gererGalerieDialogue(
+        message
+    ) {
+
+        if (
+            !message ||
+            typeof message !==
+                "object"
+        ) {
+
+            return false;
+
+        }
+
+
+        if (
+            !Object.prototype
+                .hasOwnProperty
+                .call(
+                    message,
+                    "galerie"
+                )
+        ) {
+
+            return false;
+
+        }
+
+
+        const valeur =
+            message.galerie;
+
+
+        if (!valeur) {
+
+            return false;
+
+        }
+
+
+        /*---------------------------------------------
+         PASSER PAR LE MOTEUR EN PRIORITÉ
+        ---------------------------------------------*/
+
+        if (
+            typeof moteur !==
+                "undefined" &&
+
+            moteur !== null &&
+
+            typeof moteur
+                .gererGalerieElement ===
+                "function"
+        ) {
+
+            try {
+
+                return moteur
+                    .gererGalerieElement(
+                        message
+                    );
+
+            }
+            catch (erreur) {
+
+                console.error(
+                    "dialogue.js : erreur galerie via moteur :",
+                    erreur
+                );
+
+            }
+
+        }
+
+
+        /*---------------------------------------------
+         SECOURS : GALERIE MANAGER DIRECTEMENT
+        ---------------------------------------------*/
+
+        if (
+            !this.galerieDisponible()
+        ) {
+
+            return false;
+
+        }
+
+
+        try {
+
+            if (
+                Array.isArray(
+                    valeur
+                )
+            ) {
+
+                if (
+                    typeof galerieManager
+                        .debloquerPlusieurs ===
+                        "function"
+                ) {
+
+                    galerieManager
+                        .debloquerPlusieurs(
+                            valeur
+                        );
+
+                    return true;
+
+                }
+
+
+                let auMoinsUnDeblocage =
+                    false;
+
+
+                valeur.forEach(
+                    id => {
+
+                        if (
+                            galerieManager
+                                .debloquer(
+                                    id
+                                )
+                        ) {
+
+                            auMoinsUnDeblocage =
+                                true;
+
+                        }
+
+                    }
+                );
+
+
+                return auMoinsUnDeblocage;
+
+            }
+
+
+            return galerieManager
+                .debloquer(
+                    String(
+                        valeur
+                    )
+                        .trim()
+                );
+
+        }
+        catch (erreur) {
+
+            console.error(
+                "dialogue.js : impossible de débloquer le média :",
+                erreur
+            );
+
+            return false;
+
+        }
 
     },
 
@@ -356,7 +560,10 @@ const dialogueManager = {
                 "aucun" ||
 
             nomSon.toLowerCase() ===
-                "aucune"
+                "none" ||
+
+            nomSon.toLowerCase() ===
+                "false"
         ) {
 
             return;
@@ -364,17 +571,296 @@ const dialogueManager = {
         }
 
 
+        let volume =
+            undefined;
+
+
+        if (
+            typeof message.volumeSon ===
+                "number" &&
+
+            Number.isFinite(
+                message.volumeSon
+            )
+        ) {
+
+            volume =
+                Math.max(
+                    0,
+                    Math.min(
+                        1,
+                        message.volumeSon
+                    )
+                );
+
+        }
+
+
         this.jouerEffetSonore(
-
             nomSon,
-
-            message.volumeSon
-
+            volume
         );
 
     },
-        /*=====================================================
-        REMPLACER LES VARIABLES DANS LES TEXTES
+
+
+    /*=====================================================
+        JOUER UN SON DE NOTIFICATION
+    =====================================================*/
+
+    jouerSonNotification(
+        message
+    ) {
+
+        if (!message) {
+
+            return;
+
+        }
+
+
+        const evenement =
+            this.obtenirEvenementSonore(
+                message
+            );
+
+
+        if (!evenement) {
+
+            return;
+
+        }
+
+
+        switch (evenement) {
+
+            case "succes":
+
+                this.jouerEffetSonore(
+                    "succes"
+                );
+
+                break;
+
+
+            case "choix-important":
+
+                this.jouerEffetSonore(
+                    "choix-important"
+                );
+
+                break;
+
+
+            case "information-personnage":
+
+                this.jouerEffetSonore(
+                    "information-personnage"
+                );
+
+                break;
+
+        }
+
+    },
+
+
+    /*=====================================================
+        NORMALISER UN PERSONNAGE
+    =====================================================*/
+
+    normaliserPersonnage(
+        personnage
+    ) {
+
+        let type =
+            String(
+                personnage ||
+                "narrateur"
+            )
+                .toLowerCase()
+                .trim();
+
+
+        type =
+            type
+
+                .normalize(
+                    "NFD"
+                )
+
+                .replace(
+                    /[\u0300-\u036f]/g,
+                    ""
+                )
+
+                .replace(
+                    /_/g,
+                    "-"
+                )
+
+                .replace(
+                    /\s+/g,
+                    "-"
+                );
+
+
+        const alias = {
+
+            narrateur:
+                "narrateur",
+
+            narration:
+                "narrateur",
+
+            joueur:
+                "joueur",
+
+            player:
+                "joueur",
+
+            eva:
+                "eva",
+
+            zoe:
+                "zoe",
+
+            emelyne:
+                "emelyne",
+
+            bryan:
+                "bryan",
+
+            christophe:
+                "christophe",
+
+            morel:
+                "lieutenant-morel",
+
+            lieutenant:
+                "lieutenant-morel",
+
+            "lieutenant-morel":
+                "lieutenant-morel",
+
+            eleve:
+                "eleve",
+
+            telephone:
+                "telephone",
+
+            tel:
+                "telephone",
+
+            sms:
+                "sms",
+
+            systeme:
+                "systeme",
+
+            succes:
+                "systeme"
+
+        };
+
+
+        return (
+            alias[
+                type
+            ] ||
+            type
+        );
+
+    },
+
+
+    /*=====================================================
+        OBTENIR LE NOM AFFICHÉ D'UN PERSONNAGE
+    =====================================================*/
+
+    obtenirNomPersonnage(
+        personnage
+    ) {
+
+        const type =
+            this.normaliserPersonnage(
+                personnage
+            );
+
+
+        const noms = {
+
+            narrateur:
+                "",
+
+            joueur:
+                "Vous",
+
+            eva:
+                "Eva",
+
+            zoe:
+                "Zoé",
+
+            emelyne:
+                "Emelyne",
+
+            bryan:
+                "Bryan",
+
+            christophe:
+                "Christophe",
+
+            "lieutenant-morel":
+                "Lieutenant Morel",
+
+            eleve:
+                "Élève",
+
+            telephone:
+                "Téléphone",
+
+            sms:
+                "SMS",
+
+            systeme:
+                "Système"
+
+        };
+
+
+        if (
+            type ===
+                "joueur" &&
+
+            typeof moteur !==
+                "undefined" &&
+
+            moteur.joueur &&
+
+            moteur.joueur.nom
+        ) {
+
+            return String(
+                moteur.joueur.nom
+            );
+
+        }
+
+
+        return (
+            noms[
+                type
+            ] ||
+            personnage ||
+            ""
+        );
+
+    },
+
+
+    /*=====================================================
+        REMPLACER LES VARIABLES DANS LE TEXTE
     =====================================================*/
 
     remplacerVariables(
@@ -888,7 +1374,9 @@ const dialogueManager = {
         );
 
     },
-        /*=====================================================
+
+
+    /*=====================================================
         VIDER LA CONVERSATION
     =====================================================*/
 
@@ -900,11 +1388,13 @@ const dialogueManager = {
 
         }
 
+
         if (!this.conteneur) {
 
             return;
 
         }
+
 
         /*
             Augmenter cette valeur annule les indicateurs
@@ -913,8 +1403,10 @@ const dialogueManager = {
 
         this.sequenceAffichage += 1;
 
+
         this.conteneur.innerHTML =
             "";
+
 
         /*
             Le premier personnage de la prochaine scène
@@ -925,9 +1417,7 @@ const dialogueManager = {
             null;
 
     },
-
-
-    /*=====================================================
+        /*=====================================================
         AFFICHER UNE SCÈNE
     =====================================================*/
 
@@ -1167,7 +1657,8 @@ const dialogueManager = {
                 }
 
             }
-                        /*
+
+            /*
                 Vérification supplémentaire avant
                 l'ajout du véritable message.
             */
@@ -1623,55 +2114,77 @@ const dialogueManager = {
         options = {}
     ) {
 
-        if (!this.conteneur) {
+        if (
+            !this.conteneur
+        ) {
 
             this.initialiser();
 
         }
 
 
-        if (!this.conteneur) {
+        if (
+            !this.conteneur
+        ) {
 
             return null;
 
         }
 
 
-        /*
-            Applique le fond lorsque ajouterMessage()
-            est appelé directement.
-
-            Cela permet notamment aux messages issus
-            des choix de changer eux aussi le décor.
-
-            Exemple :
-
-            {
-                "personnage": "joueur",
-                "texte": "Je vais l'aider.",
-                "fond": "cafeteria_action_joueur"
-            }
-        */
+        /*---------------------------------------------
+         FOND ASSOCIÉ AU MESSAGE
+        ---------------------------------------------*/
 
         if (
             options &&
             typeof options ===
                 "object" &&
-
             typeof moteur !==
                 "undefined" &&
-
+            moteur !==
+                null &&
             typeof moteur
                 .gererFondDialogue ===
                 "function"
         ) {
 
-            moteur.gererFondDialogue(
-                options
-            );
+            try {
+
+                moteur
+                    .gererFondDialogue(
+                        options
+                    );
+
+            }
+            catch (erreur) {
+
+                console.error(
+                    "dialogue.js : erreur pendant le changement de fond :",
+                    erreur
+                );
+
+            }
 
         }
 
+
+        /*---------------------------------------------
+         GALERIE
+
+         Le déblocage se fait ici parce que cette
+         fonction correspond à l'apparition réelle
+         de la bulle dans la conversation.
+        ---------------------------------------------*/
+
+        this.gererGalerieDialogue(
+            options
+        );
+
+
+        /*---------------------------------------------
+         NORMALISATION DU PERSONNAGE
+        ---------------------------------------------*/
 
         const type =
             this.normaliserPersonnage(
@@ -1679,15 +2192,28 @@ const dialogueManager = {
             );
 
 
-        const contenuPrepare =
+        /*---------------------------------------------
+         TEXTE FINAL
+        ---------------------------------------------*/
+
+        const texteFinal =
             this.remplacerVariables(
                 contenu
             );
 
 
-        /*
-            Conteneur principal du message.
-        */
+        if (
+            !texteFinal
+        ) {
+
+            return null;
+
+        }
+
+
+        /*---------------------------------------------
+         CONTENEUR DU MESSAGE
+        ---------------------------------------------*/
 
         const message =
             document.createElement(
@@ -1701,62 +2227,136 @@ const dialogueManager = {
         );
 
 
-        /*
-            Ajoute une classe différente selon
-            le sens du message.
-
-            Le CSS utilise ces classes pour faire glisser
-            légèrement la bulle avant de la stabiliser.
-        */
+        /*---------------------------------------------
+         CLASSE PERSONNALISÉE
+        ---------------------------------------------*/
 
         if (
-            type === "joueur"
+            typeof options.classe ===
+                "string" &&
+            options.classe.trim() !==
+                ""
         ) {
 
-            message.classList.add(
-                "envoye"
-            );
+            options.classe
+                .trim()
+                .split(
+                    /\s+/
+                )
+                .forEach(
+                    classe => {
 
-        }
-        else {
+                        if (
+                            classe
+                        ) {
 
-            message.classList.add(
-                "recu"
-            );
+                            message.classList.add(
+                                classe
+                            );
 
-        }
+                        }
 
-
-        /*
-            Nom du personnage.
-
-            Le nom ne s'affiche pas pour :
-
-            - la narration ;
-            - les pensées.
-        */
-
-        if (
-            type !== "narration" &&
-
-            type !== "pensee"
-        ) {
-
-            const nom =
-                document.createElement(
-                    "div"
+                    }
                 );
 
+        }
 
-            nom.classList.add(
-                "nom"
+
+        /*---------------------------------------------
+         MESSAGE IMPORTANT
+        ---------------------------------------------*/
+
+        if (
+            options.important ===
+                true
+        ) {
+
+            message.classList.add(
+                "important"
             );
 
+        }
+
+
+        /*---------------------------------------------
+         MESSAGE SECRET
+        ---------------------------------------------*/
+
+        if (
+            options.secret ===
+                true
+        ) {
+
+            message.classList.add(
+                "secret"
+            );
+
+        }
+
+
+        /*---------------------------------------------
+         MESSAGE SYSTÈME
+        ---------------------------------------------*/
+
+        if (
+            type ===
+                "systeme"
+        ) {
+
+            message.classList.add(
+                "message-systeme"
+            );
+
+        }
+
+
+        /*---------------------------------------------
+         MESSAGE NARRATION
+        ---------------------------------------------*/
+
+        if (
+            type ===
+                "narrateur"
+        ) {
+
+            message.classList.add(
+                "narration"
+            );
+
+        }
+
+
+        /*---------------------------------------------
+         NOM DU PERSONNAGE
+        ---------------------------------------------*/
+
+        const nom =
+            document.createElement(
+                "div"
+            );
+
+
+        nom.classList.add(
+            "nom"
+        );
+
+
+        const nomPersonnage =
+            this.obtenirNomPersonnage(
+                type
+            );
+
+
+        /*
+            La narration n'affiche pas de nom.
+        */
+
+        if (
+            nomPersonnage
+        ) {
 
             nom.textContent =
-                this.obtenirNom(
-                    type
-                );
+                nomPersonnage;
 
 
             message.appendChild(
@@ -1766,9 +2366,9 @@ const dialogueManager = {
         }
 
 
-        /*
-            Création de la bulle.
-        */
+        /*---------------------------------------------
+         BULLE
+        ---------------------------------------------*/
 
         const bulle =
             document.createElement(
@@ -1781,17 +2381,67 @@ const dialogueManager = {
         );
 
 
-        /*
-            innerHTML permet de conserver les balises
-            utilisées dans le JSON comme :
+        /*---------------------------------------------
+         HTML AUTORISÉ EXPLICITEMENT
+        ---------------------------------------------*/
 
-            <br>
-            <strong>
-            <em>
-        */
+        if (
+            options.html ===
+                true
+        ) {
 
-        bulle.innerHTML =
-            contenuPrepare;
+            bulle.innerHTML =
+                texteFinal;
+
+        }
+        else {
+
+            bulle.textContent =
+                texteFinal;
+
+        }
+
+
+        /*---------------------------------------------
+         TITRE / TOOLTIP
+        ---------------------------------------------*/
+
+        if (
+            typeof options.titre ===
+                "string" &&
+            options.titre.trim() !==
+                ""
+        ) {
+
+            bulle.title =
+                options.titre.trim();
+
+        }
+
+
+        /*---------------------------------------------
+         ACCESSIBILITÉ
+        ---------------------------------------------*/
+
+        if (
+            type ===
+                "narrateur"
+        ) {
+
+            bulle.setAttribute(
+                "aria-label",
+                texteFinal
+            );
+
+        }
+        else {
+
+            bulle.setAttribute(
+                "aria-label",
+                `${nomPersonnage} : ${texteFinal}`
+            );
+
+        }
 
 
         message.appendChild(
@@ -1799,83 +2449,100 @@ const dialogueManager = {
         );
 
 
-        /*
-            Ajout du message dans la conversation.
-        */
+        /*---------------------------------------------
+         AJOUT AU DOM
+        ---------------------------------------------*/
 
         this.conteneur.appendChild(
             message
         );
 
 
-        /*
-            Déclenchement du son du personnage
-            au moment où le véritable message apparaît.
-        */
+        /*---------------------------------------------
+         SON DU DIALOGUE
+        ---------------------------------------------*/
 
-        this.jouerSonDialogue({
-
-            ...options,
-
-            personnage:
-
-                options.personnage ||
-
-                options.type ||
-
-                personnage
-
-        });
+        this.jouerSonDialogue(
+            options
+        );
 
 
-        /*
-            Compatibilité avec animationManager.
+        /*---------------------------------------------
+         SON DE NOTIFICATION
+        ---------------------------------------------*/
 
-            L'animation CSS du nouveau style fonctionne
-            même si animationManager n'existe pas.
-        */
+        this.jouerSonNotification(
+            options
+        );
 
-        if (
-            typeof animationManager !==
-                "undefined" &&
 
-            animationManager !== null
-        ) {
+        /*---------------------------------------------
+         CLASSE D'APPARITION
+        ---------------------------------------------*/
 
-            if (
-                type === "joueur" &&
+        requestAnimationFrame(
+            () => {
 
-                typeof animationManager.envoi ===
-                    "function"
-            ) {
-
-                animationManager.envoi(
-                    message
+                message.classList.add(
+                    "envoye"
                 );
 
             }
-            else if (
-                type !== "joueur" &&
-
-                typeof animationManager.reception ===
-                    "function"
-            ) {
-
-                animationManager.reception(
-                    message
-                );
-
-            }
-
-        }
+        );
 
 
-        /*
-            Fait défiler automatiquement la conversation
-            vers le nouveau message.
-        */
+        /*---------------------------------------------
+         DÉFILEMENT AUTOMATIQUE
+        ---------------------------------------------*/
 
         this.defiler();
+
+
+        /*---------------------------------------------
+         ÉVÉNEMENT PERSONNALISÉ
+
+         Permet à d'autres systèmes d'écouter
+         l'apparition d'un message.
+        ---------------------------------------------*/
+
+        try {
+
+            document.dispatchEvent(
+
+                new CustomEvent(
+                    "dialogueAffiche",
+                    {
+
+                        detail: {
+
+                            personnage:
+                                type,
+
+                            texte:
+                                texteFinal,
+
+                            options:
+                                options,
+
+                            element:
+                                message
+
+                        }
+
+                    }
+                )
+
+            );
+
+        }
+        catch (erreur) {
+
+            /*
+                Le jeu continue même si les événements
+                personnalisés ne sont pas disponibles.
+            */
+
+        }
 
 
         return message;
@@ -1884,681 +2551,102 @@ const dialogueManager = {
 
 
     /*=====================================================
-        MESSAGE PROGRESSIF
+        AJOUTER UNE NARRATION
     =====================================================*/
 
-    async ecrireProgressivement(
+    ajouterNarration(
         contenu,
-        personnage = "narrateur",
-        vitesse = 20,
         options = {}
     ) {
 
-        if (!this.conteneur) {
+        return this.ajouterMessage(
 
-            this.initialiser();
+            contenu,
 
-        }
+            "narrateur",
 
+            options
 
-        if (!this.conteneur) {
-
-            return null;
-
-        }
-
-
-        /*
-            Applique le fond associé à ce message
-            avant l'indicateur d'écriture.
-
-            Cette partie est utile si un dialogue est
-            affiché avec ecrireProgressivement() plutôt
-            qu'avec afficherScene().
-        */
-
-        if (
-            options &&
-            typeof options ===
-                "object" &&
-
-            typeof moteur !==
-                "undefined" &&
-
-            typeof moteur
-                .gererFondDialogue ===
-                "function"
-        ) {
-
-            moteur.gererFondDialogue(
-                options
-            );
-
-        }
-
-
-        const contenuPrepare =
-            this.remplacerVariables(
-                contenu
-            );
-
-
-        const type =
-            this.normaliserPersonnage(
-                personnage
-            );
-
-
-        /*
-            Numéro de la séquence au moment où
-            l'écriture progressive commence.
-
-            Si une autre scène est chargée, cette écriture
-            pourra être interrompue.
-        */
-
-        const sequence =
-            this.sequenceAffichage;
-
-
-        /*
-            Affiche d'abord les trois points animés,
-            sauf si cela a été désactivé.
-        */
-
-        const afficherEcriture =
-
-            options.afficherEcriture === true ||
-
-            (
-
-                options.afficherEcriture !== false &&
-
-                type !== "narration" &&
-
-                type !== "pensee" &&
-
-                type !== "systeme"
-
-            );
-
-
-        if (
-            afficherEcriture
-        ) {
-
-            const duree =
-                this.calculerDureeEcriture(
-
-                    contenuPrepare,
-
-                    options
-
-                );
-
-
-            const termine =
-                await this
-                    .afficherIndicateurEcriture(
-
-                        personnage,
-
-                        duree,
-
-                        sequence
-
-                    );
-
-
-            if (!termine) {
-
-                return null;
-
-            }
-
-        }
-
-
-        if (
-            sequence !==
-                this.sequenceAffichage
-        ) {
-
-            return null;
-
-        }
-
-
-        /*
-            Conteneur principal du message.
-        */
-
-        const message =
-            document.createElement(
-                "div"
-            );
-
-
-        message.classList.add(
-            "message",
-            type
         );
-
-
-        if (
-            type === "joueur"
-        ) {
-
-            message.classList.add(
-                "envoye"
-            );
-
-        }
-        else {
-
-            message.classList.add(
-                "recu"
-            );
-
-        }
-
-
-        /*
-            Nom du personnage.
-        */
-
-        if (
-            type !== "narration" &&
-
-            type !== "pensee"
-        ) {
-
-            const nom =
-                document.createElement(
-                    "div"
-                );
-
-
-            nom.classList.add(
-                "nom"
-            );
-
-
-            nom.textContent =
-                this.obtenirNom(
-                    type
-                );
-
-
-            message.appendChild(
-                nom
-            );
-
-        }
-
-
-        /*
-            Création de la bulle vide.
-
-            Le texte sera ajouté caractère par caractère.
-        */
-
-        const bulle =
-            document.createElement(
-                "div"
-            );
-
-
-        bulle.classList.add(
-            "bulle"
-        );
-
-
-        message.appendChild(
-            bulle
-        );
-
-
-        this.conteneur.appendChild(
-            message
-        );
-
-
-        /*
-            Joue le son une seule fois lorsque
-            la bulle apparaît.
-        */
-
-        this.jouerSonDialogue({
-
-            ...options,
-
-            personnage:
-
-                options.personnage ||
-
-                options.type ||
-
-                personnage
-
-        });
-
-
-        this.defiler();
-
-
-        /*
-            Conversion de la vitesse en nombre valide.
-
-            Plus la valeur est faible,
-            plus le texte s'écrit rapidement.
-        */
-
-        const delai =
-            Math.max(
-
-                0,
-
-                Number(
-                    vitesse
-                ) || 0
-
-            );
-
-
-        let texteAffiche =
-            "";
-
-
-        /*
-            Écriture caractère par caractère.
-        */
-
-        for (
-            let index = 0;
-            index < contenuPrepare.length;
-            index += 1
-        ) {
-
-            /*
-                Arrêt si une nouvelle scène est chargée.
-            */
-
-            if (
-                sequence !==
-                    this.sequenceAffichage
-            ) {
-
-                message.remove();
-
-                return null;
-
-            }
-
-
-            texteAffiche +=
-                contenuPrepare[
-                    index
-                ];
-
-
-            bulle.textContent =
-                texteAffiche;
-
-
-            this.defiler();
-
-
-            /*
-                Les ponctuations créent une petite pause
-                supplémentaire pour rendre l'écriture
-                plus naturelle.
-            */
-
-            const caractere =
-                contenuPrepare[
-                    index
-                ];
-
-
-            let delaiActuel =
-                delai;
-
-
-            if (
-                caractere === "." ||
-
-                caractere === "!" ||
-
-                caractere === "?"
-            ) {
-
-                delaiActuel +=
-                    180;
-
-            }
-            else if (
-                caractere === "," ||
-
-                caractere === ";" ||
-
-                caractere === ":"
-            ) {
-
-                delaiActuel +=
-                    80;
-
-            }
-
-
-            await this.attendre(
-                delaiActuel
-            );
-
-        }
-
-
-        /*
-            Lance éventuellement les animations
-            supplémentaires de animationManager.
-        */
-
-        if (
-            typeof animationManager !==
-                "undefined" &&
-
-            animationManager !== null
-        ) {
-
-            if (
-                type === "joueur" &&
-
-                typeof animationManager.envoi ===
-                    "function"
-            ) {
-
-                animationManager.envoi(
-                    message
-                );
-
-            }
-            else if (
-                type !== "joueur" &&
-
-                typeof animationManager.reception ===
-                    "function"
-            ) {
-
-                animationManager.reception(
-                    message
-                );
-
-            }
-
-        }
-
-
-        return message;
-
-    },
-        /*=====================================================
-        NORMALISER LE PERSONNAGE
-    =====================================================*/
-
-    normaliserPersonnage(
-        personnage
-    ) {
-
-        const valeur =
-            String(
-                personnage ||
-                "narrateur"
-            )
-                .toLowerCase()
-
-                .normalize(
-                    "NFD"
-                )
-
-                .replace(
-                    /[\u0300-\u036f]/g,
-                    ""
-                )
-
-                .trim();
-
-
-        switch (
-            valeur
-        ) {
-
-            case "joueur":
-
-            case "toi":
-
-            case "vous":
-
-            case "player":
-
-                return "joueur";
-
-
-            case "eva":
-
-                return "eva";
-
-
-            case "zoe":
-
-                return "zoe";
-
-
-            case "emelyne":
-
-                return "emelyne";
-
-
-            case "bryan":
-
-                return "bryan";
-
-
-            case "christophe":
-
-                return "christophe";
-
-
-            case "lieutenant morel":
-
-            case "lieutenant-morel":
-
-            case "morel":
-
-                return "lieutenant-morel";
-
-
-            case "eleve":
-
-            case "etudiant":
-
-            case "etudiante":
-
-                return "eleve";
-
-
-            case "systeme":
-
-                return "systeme";
-
-
-            case "sms":
-
-            case "message":
-
-            case "texto":
-
-                return "sms";
-
-
-            case "telephone":
-
-            case "appel":
-
-                return "telephone";
-
-
-            case "pensee":
-
-                return "pensee";
-
-
-            case "narration":
-
-            case "narrateur":
-
-                return "narration";
-
-
-            default:
-
-                /*
-                    Un personnage inconnu devient une
-                    narration pour éviter une classe CSS
-                    ou un fichier audio inexistant.
-                */
-
-                return "narration";
-
-        }
 
     },
 
 
     /*=====================================================
-        NOM AFFICHÉ
+        AJOUTER UN MESSAGE DU JOUEUR
     =====================================================*/
 
-    obtenirNom(
-        personnage
+    ajouterMessageJoueur(
+        contenu,
+        options = {}
     ) {
 
-        if (
-            personnage === "joueur" &&
+        return this.ajouterMessage(
 
-            typeof moteur !==
-                "undefined" &&
+            contenu,
 
-            moteur.joueur &&
+            "joueur",
 
-            moteur.joueur.nom
-        ) {
+            options
 
-            return String(
-                moteur.joueur.nom
-            );
+        );
 
-        }
+    },
 
 
-        const noms = {
+    /*=====================================================
+        AJOUTER UN MESSAGE SYSTÈME
+    =====================================================*/
 
-            joueur:
-                "Joueur",
+    ajouterMessageSysteme(
+        contenu,
+        options = {}
+    ) {
 
-            eva:
-                "Eva",
+        return this.ajouterMessage(
 
-            zoe:
-                "Zoé",
+            contenu,
 
-            emelyne:
-                "Émelyne",
+            "systeme",
 
-            bryan:
-                "Bryan",
+            options
 
-            christophe:
-                "Christophe",
+        );
 
-            "lieutenant-morel":
-                "Lieutenant Morel",
+    },
 
-            eleve:
-                "Élève",
 
-            systeme:
-                "Système",
+    /*=====================================================
+        AJOUTER UNE NOTIFICATION
+    =====================================================*/
 
-            sms:
-                "Message",
+    ajouterNotification(
+        contenu,
+        evenement = "",
+        options = {}
+    ) {
 
-            telephone:
-                "Téléphone",
+        const configuration = {
 
-            narration:
-                "Narrateur",
+            ...options,
 
-            pensee:
-                "Pensée"
+            evenement:
+                evenement ||
+
+                options.evenement ||
+
+                ""
 
         };
 
 
-        return (
-
-            noms[
-                personnage
-            ] ||
-
-            personnage
-
-        );
-
-    },
-
-
-    /*=====================================================
-        MESSAGE SYSTÈME ORDINAIRE
-    =====================================================*/
-
-    systeme(
-        texte,
-        options = {}
-    ) {
-
-        if (!texte) {
-
-            return null;
-
-        }
-
-
-        /*
-            Un message système ordinaire reste silencieux.
-
-            Pour produire le son système, utilise plutôt :
-
-            dialogueManager.nouvelleInformation(...)
-        */
-
         return this.ajouterMessage(
 
-            texte,
+            contenu,
 
             "systeme",
 
-            {
-
-                ...options,
-
-                personnage:
-                    "systeme",
-
-                son:
-                    options.son ||
-                    "aucun"
-
-            }
+            configuration
 
         );
 
@@ -2566,417 +2654,152 @@ const dialogueManager = {
 
 
     /*=====================================================
-        NOUVELLE INFORMATION SUR UN PERSONNAGE
+        AFFICHER UNE NOTIFICATION DE SUCCÈS
     =====================================================*/
 
-    nouvelleInformation(
-        texte,
-        personnageConcerne = null,
-        options = {}
+    afficherNotificationSucces(
+        titre,
+        description = ""
     ) {
 
-        if (!texte) {
+        let texte =
+            "Succès débloqué";
 
-            return null;
-
-        }
-
-
-        return this.ajouterMessage(
-
-            texte,
-
-            "systeme",
-
-            {
-
-                ...options,
-
-                personnage:
-                    "systeme",
-
-                evenement:
-                    "information-personnage",
-
-                nouvelleInformation:
-                    true,
-
-                personnageConcerne,
-
-                son:
-                    options.son ||
-                    "systeme"
-
-            }
-
-        );
-
-    },
-
-
-    /*=====================================================
-        AFFICHER UN SUCCÈS
-    =====================================================*/
-
-    succes(
-        texte,
-        options = {}
-    ) {
-
-        if (!texte) {
-
-            return null;
-
-        }
-
-
-        /*
-            Si demandé, le succès apparaît dans la
-            conversation.
-        */
 
         if (
-            options.dansConversation ===
-                true
+            titre
         ) {
 
-            return this.ajouterMessage(
-
-                texte,
-
-                "systeme",
-
-                {
-
-                    ...options,
-
-                    evenement:
-                        "succes",
-
-                    personnage:
-                        "systeme",
-
-                    son:
-                        options.son ||
-                        "succes"
-
-                }
-
-            );
+            texte +=
+                ` : ${titre}`;
 
         }
 
 
-        /*
-            Sinon, il apparaît sous forme
-            de notification.
-        */
+        if (
+            description
+        ) {
 
-        this.notification(
-
-            texte,
-
-            {
-
-                ...options,
-
-                evenement:
-                    "succes",
-
-                son:
-                    options.son ||
-                    "succes",
-
-                classe:
-                    "notification-succes"
-
-            }
-
-        );
-
-
-        return null;
-
-    },
-        /*=====================================================
-        SIGNALER UN CHOIX IMPORTANT
-    =====================================================*/
-
-    choixImportant(
-        texte = "",
-        options = {}
-    ) {
-
-        /*
-            Cette fonction peut seulement jouer le son
-            ou afficher une notification.
-
-            Exemple sans texte :
-
-            dialogueManager.choixImportant();
-        */
-
-        if (!texte) {
-
-            this.jouerSonDialogue({
-
-                evenement:
-                    "choix-important",
-
-                son:
-                    options.son ||
-                    "choix-important",
-
-                volumeSon:
-                    options.volumeSon
-
-            });
-
-            return null;
+            texte +=
+                ` — ${description}`;
 
         }
 
 
-        this.notification(
+        return this.ajouterNotification(
 
             texte,
 
+            "succes",
+
             {
 
-                ...options,
-
-                evenement:
-                    "choix-important",
-
-                son:
-                    options.son ||
-                    "choix-important",
-
                 classe:
-                    "notification-choix-important"
+                    "notification-succes",
+
+                important:
+                    true
 
             }
 
         );
-
-
-        return null;
 
     },
 
 
     /*=====================================================
-        NOTIFICATION VISUELLE
+        AFFICHER UNE INFORMATION DE PERSONNAGE
     =====================================================*/
 
-    notification(
+    afficherInformationPersonnage(
         texte,
         options = {}
     ) {
 
-        if (!texte) {
+        return this.ajouterNotification(
+
+            texte,
+
+            "information-personnage",
+
+            {
+
+                ...options,
+
+                classe:
+                    [
+                        options.classe,
+                        "notification-information"
+                    ]
+                        .filter(
+                            Boolean
+                        )
+                        .join(
+                            " "
+                        )
+
+            }
+
+        );
+
+    },
+
+
+    /*=====================================================
+        AFFICHER UN CHOIX IMPORTANT
+    =====================================================*/
+
+    afficherChoixImportant(
+        texte,
+        options = {}
+    ) {
+
+        return this.ajouterNotification(
+
+            texte,
+
+            "choix-important",
+
+            {
+
+                ...options,
+
+                classe:
+                    [
+                        options.classe,
+                        "notification-choix-important"
+                    ]
+                        .filter(
+                            Boolean
+                        )
+                        .join(
+                            " "
+                        ),
+
+                important:
+                    true
+
+            }
+
+        );
+
+    },
+
+
+    /*=====================================================
+        DÉFILER VERS LE BAS
+    =====================================================*/
+
+    defiler() {
+
+        if (
+            !this.conteneur
+        ) {
 
             return;
 
         }
 
-
-        /*
-            Compatibilité avec l'ancien format :
-
-            notification(
-                "Texte",
-                "notification"
-            )
-        */
-
-        if (
-            typeof options ===
-                "string"
-        ) {
-
-            options = {
-
-                son:
-                    options
-
-            };
-
-        }
-
-
-        /*
-            Création de la notification.
-        */
-
-        const notification =
-            document.createElement(
-                "div"
-            );
-
-
-        notification.classList.add(
-            "notification"
-        );
-
-
-        /*
-            Ajout éventuel d'une classe personnalisée.
-        */
-
-        if (
-            typeof options.classe ===
-                "string" &&
-
-            options.classe.trim() !==
-                ""
-        ) {
-
-            notification.classList.add(
-                options.classe.trim()
-            );
-
-        }
-
-
-        notification.textContent =
-            this.remplacerVariables(
-                texte
-            );
-
-
-        document.body.appendChild(
-            notification
-        );
-
-
-        /*
-            Détermine le type de notification sonore.
-        */
-
-        const evenement =
-            this.obtenirEvenementSonore(
-                options
-            );
-
-
-        if (
-            evenement
-        ) {
-
-            this.jouerSonDialogue({
-
-                ...options,
-
-                evenement
-
-            });
-
-        }
-        else {
-
-            this.jouerEffetSonore(
-
-                options.son ||
-                    "notification",
-
-                options.volumeSon
-
-            );
-
-        }
-
-
-        /*
-            Active l'animation d'apparition.
-        */
-
-        requestAnimationFrame(
-            () => {
-
-                notification.classList.add(
-                    "visible"
-                );
-
-            }
-        );
-
-
-        /*
-            Durée d'affichage de la notification.
-
-            Exemple dans les options :
-
-            {
-                duree: 4000
-            }
-        */
-
-        const duree =
-            Number.isFinite(
-
-                Number(
-                    options.duree
-                )
-
-            )
-                ? Math.max(
-
-                    500,
-
-                    Number(
-                        options.duree
-                    )
-
-                )
-
-                : 2500;
-
-
-        setTimeout(
-            () => {
-
-                notification.classList.remove(
-                    "visible"
-                );
-
-
-                /*
-                    Attend la fin de l'animation CSS
-                    avant de supprimer l'élément.
-                */
-
-                setTimeout(
-                    () => {
-
-                        notification.remove();
-
-                    },
-                    300
-                );
-
-            },
-            duree
-        );
-
-    },
-
-
-    /*=====================================================
-        RÉINITIALISER LE DERNIER PERSONNAGE SONORE
-    =====================================================*/
-
-    reinitialiserSonDialogue() {
-
-        this.dernierPersonnageSonore =
-            null;
-
-    },
-    /*=====================================================
-        DÉFILEMENT AUTOMATIQUE
-    =====================================================*/
-
-    defiler() {
 
         const conversation =
             document.getElementById(
@@ -2984,28 +2807,37 @@ const dialogueManager = {
             );
 
 
-        if (!conversation) {
+        /*
+            Le scroll principal du jeu se trouve
+            normalement sur #conversation.
+        */
 
-            return;
+        const cible =
+            conversation ||
+            this.conteneur;
 
-        }
 
+        try {
 
-        requestAnimationFrame(
-            () => {
-
-                conversation.scrollTo({
+            cible.scrollTo(
+                {
 
                     top:
-                        conversation.scrollHeight,
+                        cible.scrollHeight,
 
                     behavior:
                         "smooth"
 
-                });
+                }
+            );
 
-            }
-        );
+        }
+        catch (erreur) {
+
+            cible.scrollTop =
+                cible.scrollHeight;
+
+        }
 
     },
 
@@ -3018,27 +2850,3792 @@ const dialogueManager = {
         duree
     ) {
 
+        let temps =
+            Number(
+                duree
+            );
+
+
+        if (
+            !Number.isFinite(
+                temps
+            ) ||
+            temps <
+                0
+        ) {
+
+            temps =
+                0;
+
+        }
+
+
         return new Promise(
             resolve => {
 
                 setTimeout(
-
                     resolve,
-
-                    Math.max(
-
-                        0,
-
-                        Number(
-                            duree
-                        ) || 0
-
-                    )
-
+                    temps
                 );
 
             }
         );
+
+    },
+
+
+    /*=====================================================
+        OBTENIR LE NOM D'UN PERSONNAGE
+
+        Alias conservé pour compatibilité avec
+        les anciennes fonctions du fichier.
+    =====================================================*/
+
+    obtenirNom(
+        personnage
+    ) {
+
+        return this.obtenirNomPersonnage(
+            personnage
+        );
+
+    },
+        /*=====================================================
+        ÉCRIRE UN MESSAGE PROGRESSIVEMENT
+
+        Cette méthode est utilisée lorsqu'un message
+        doit apparaître caractère par caractère.
+
+        Le système conserve :
+        - l'indicateur d'écriture ;
+        - les délais de ponctuation ;
+        - l'annulation lors d'un changement de scène ;
+        - les sons ;
+        - les animations ;
+        - la galerie.
+    =====================================================*/
+
+    async ecrireProgressivement(
+        contenu,
+        personnage = "narrateur",
+        vitesse = 20,
+        options = {}
+    ) {
+
+        if (
+            !this.conteneur
+        ) {
+
+            this.initialiser();
+
+        }
+
+
+        if (
+            !this.conteneur
+        ) {
+
+            return null;
+
+        }
+
+
+        /*---------------------------------------------
+         FOND ASSOCIÉ AU MESSAGE
+
+         Utile lorsque ecrireProgressivement()
+         est appelé directement sans passer
+         par afficherScene().
+        ---------------------------------------------*/
+
+        if (
+            options &&
+            typeof options ===
+                "object" &&
+
+            typeof moteur !==
+                "undefined" &&
+
+            moteur !==
+                null &&
+
+            typeof moteur
+                .gererFondDialogue ===
+                "function"
+        ) {
+
+            try {
+
+                moteur
+                    .gererFondDialogue(
+                        options
+                    );
+
+            }
+            catch (
+                erreur
+            ) {
+
+                console.error(
+                    "dialogue.js : erreur pendant le changement de fond du message progressif :",
+                    erreur
+                );
+
+            }
+
+        }
+
+
+        /*---------------------------------------------
+         PRÉPARATION DU TEXTE
+        ---------------------------------------------*/
+
+        const contenuPrepare =
+            this.remplacerVariables(
+                contenu
+            );
+
+
+        if (
+            !contenuPrepare
+        ) {
+
+            return null;
+
+        }
+
+
+        /*---------------------------------------------
+         PERSONNAGE
+        ---------------------------------------------*/
+
+        const type =
+            this.normaliserPersonnage(
+                personnage
+            );
+
+
+        /*---------------------------------------------
+         SÉQUENCE ACTIVE
+
+         Si une autre scène démarre,
+         sequenceAffichage change et cette écriture
+         est immédiatement abandonnée.
+        ---------------------------------------------*/
+
+        const sequence =
+            this.sequenceAffichage;
+
+
+        /*---------------------------------------------
+         INDICATEUR D'ÉCRITURE
+        ---------------------------------------------*/
+
+        const afficherEcriture =
+
+            options.afficherEcriture ===
+                true ||
+
+            (
+
+                options.afficherEcriture !==
+                    false &&
+
+                type !==
+                    "narrateur" &&
+
+                type !==
+                    "narration" &&
+
+                type !==
+                    "pensee" &&
+
+                type !==
+                    "systeme"
+
+            );
+
+
+        if (
+            afficherEcriture
+        ) {
+
+            const duree =
+                this.calculerDureeEcriture(
+                    contenuPrepare,
+                    options
+                );
+
+
+            const termine =
+                await this
+                    .afficherIndicateurEcriture(
+                        personnage,
+                        duree,
+                        sequence
+                    );
+
+
+            if (
+                !termine
+            ) {
+
+                return null;
+
+            }
+
+        }
+
+
+        /*---------------------------------------------
+         VÉRIFICATION AVANT CRÉATION DU MESSAGE
+        ---------------------------------------------*/
+
+        if (
+            sequence !==
+                this.sequenceAffichage
+        ) {
+
+            return null;
+
+        }
+
+
+        /*---------------------------------------------
+         CONTENEUR PRINCIPAL
+        ---------------------------------------------*/
+
+        const message =
+            document.createElement(
+                "div"
+            );
+
+
+        message.classList.add(
+            "message",
+            type
+        );
+
+
+        /*---------------------------------------------
+         JOUEUR / AUTRES PERSONNAGES
+        ---------------------------------------------*/
+
+        if (
+            type ===
+                "joueur"
+        ) {
+
+            message.classList.add(
+                "envoye"
+            );
+
+        }
+        else {
+
+            message.classList.add(
+                "recu"
+            );
+
+        }
+
+
+        /*---------------------------------------------
+         CLASSE PERSONNALISÉE
+        ---------------------------------------------*/
+
+        if (
+            typeof options.classe ===
+                "string" &&
+            options.classe.trim() !==
+                ""
+        ) {
+
+            options.classe
+                .trim()
+                .split(
+                    /\s+/
+                )
+                .forEach(
+                    classe => {
+
+                        if (
+                            classe
+                        ) {
+
+                            message
+                                .classList
+                                .add(
+                                    classe
+                                );
+
+                        }
+
+                    }
+                );
+
+        }
+
+
+        /*---------------------------------------------
+         MESSAGE IMPORTANT
+        ---------------------------------------------*/
+
+        if (
+            options.important ===
+                true
+        ) {
+
+            message.classList.add(
+                "important"
+            );
+
+        }
+
+
+        /*---------------------------------------------
+         MESSAGE SECRET
+        ---------------------------------------------*/
+
+        if (
+            options.secret ===
+                true
+        ) {
+
+            message.classList.add(
+                "secret"
+            );
+
+        }
+
+
+        /*---------------------------------------------
+         MESSAGE SYSTÈME
+        ---------------------------------------------*/
+
+        if (
+            type ===
+                "systeme"
+        ) {
+
+            message.classList.add(
+                "message-systeme"
+            );
+
+        }
+
+
+        /*---------------------------------------------
+         NARRATION
+        ---------------------------------------------*/
+
+        if (
+            type ===
+                "narrateur" ||
+            type ===
+                "narration"
+        ) {
+
+            message.classList.add(
+                "narration"
+            );
+
+        }
+
+
+        /*---------------------------------------------
+         NOM DU PERSONNAGE
+        ---------------------------------------------*/
+
+        const nomPersonnage =
+            this.obtenirNomPersonnage(
+                type
+            );
+
+
+        if (
+            nomPersonnage &&
+            type !==
+                "narrateur" &&
+            type !==
+                "narration" &&
+            type !==
+                "pensee"
+        ) {
+
+            const nom =
+                document.createElement(
+                    "div"
+                );
+
+
+            nom.classList.add(
+                "nom"
+            );
+
+
+            nom.textContent =
+                nomPersonnage;
+
+
+            message.appendChild(
+                nom
+            );
+
+        }
+
+
+        /*---------------------------------------------
+         BULLE VIDE
+        ---------------------------------------------*/
+
+        const bulle =
+            document.createElement(
+                "div"
+            );
+
+
+        bulle.classList.add(
+            "bulle"
+        );
+
+
+        message.appendChild(
+            bulle
+        );
+
+
+        /*---------------------------------------------
+         AJOUT AU DOM
+        ---------------------------------------------*/
+
+        this.conteneur.appendChild(
+            message
+        );
+
+
+        /*---------------------------------------------
+         SON DU MESSAGE
+
+         Le son est joué une seule fois au moment
+         où la bulle commence réellement à apparaître.
+        ---------------------------------------------*/
+
+        this.jouerSonDialogue(
+            {
+
+                ...options,
+
+                personnage:
+
+                    options.personnage ||
+
+                    options.type ||
+
+                    personnage
+
+            }
+        );
+
+
+        /*---------------------------------------------
+         NOTIFICATION ÉVENTUELLE
+        ---------------------------------------------*/
+
+        this.jouerSonNotification(
+            options
+        );
+
+
+        /*---------------------------------------------
+         PREMIER DÉFILEMENT
+        ---------------------------------------------*/
+
+        this.defiler();
+
+
+        /*---------------------------------------------
+         VITESSE D'ÉCRITURE
+
+         Plus la valeur est basse,
+         plus le texte apparaît rapidement.
+        ---------------------------------------------*/
+
+        let delai =
+            Number(
+                vitesse
+            );
+
+
+        if (
+            !Number.isFinite(
+                delai
+            ) ||
+            delai <
+                0
+        ) {
+
+            delai =
+                20;
+
+        }
+
+
+        /*
+         Le JSON peut également définir :
+
+         "vitesseEcriture": 15
+        */
+
+        if (
+            Number.isFinite(
+                Number(
+                    options.vitesseEcriture
+                )
+            )
+        ) {
+
+            delai =
+                Math.max(
+                    0,
+                    Number(
+                        options.vitesseEcriture
+                    )
+                );
+
+        }
+
+
+        /*---------------------------------------------
+         TEXTE EN COURS
+        ---------------------------------------------*/
+
+        let texteAffiche =
+            "";
+
+
+        /*---------------------------------------------
+         ÉCRITURE CARACTÈRE PAR CARACTÈRE
+        ---------------------------------------------*/
+
+        for (
+            let index = 0;
+            index < contenuPrepare.length;
+            index += 1
+        ) {
+
+            /*-----------------------------------------
+             ANNULATION SI NOUVELLE SCÈNE
+            -----------------------------------------*/
+
+            if (
+                sequence !==
+                    this.sequenceAffichage
+            ) {
+
+                message.remove();
+
+
+                return null;
+
+            }
+
+
+            const caractere =
+                contenuPrepare[
+                    index
+                ];
+
+
+            texteAffiche +=
+                caractere;
+
+
+            /*-----------------------------------------
+             AFFICHAGE
+            -----------------------------------------*/
+
+            if (
+                options.html ===
+                    true
+            ) {
+
+                /*
+                 Pour éviter de casser les balises HTML
+                 en cours d'écriture, le mode progressif
+                 reste volontairement en texte simple.
+
+                 Le HTML complet sera appliqué une fois
+                 l'écriture terminée.
+                */
+
+                bulle.textContent =
+                    texteAffiche;
+
+            }
+            else {
+
+                bulle.textContent =
+                    texteAffiche;
+
+            }
+
+
+            this.defiler();
+
+
+            /*-----------------------------------------
+             PAUSES DE PONCTUATION
+            -----------------------------------------*/
+
+            let delaiActuel =
+                delai;
+
+
+            if (
+                caractere ===
+                    "." ||
+                caractere ===
+                    "!" ||
+                caractere ===
+                    "?"
+            ) {
+
+                delaiActuel +=
+                    180;
+
+            }
+            else if (
+                caractere ===
+                    "," ||
+                caractere ===
+                    ";" ||
+                caractere ===
+                    ":"
+            ) {
+
+                delaiActuel +=
+                    80;
+
+            }
+            else if (
+                caractere ===
+                    "\n"
+            ) {
+
+                delaiActuel +=
+                    100;
+
+            }
+
+
+            if (
+                delaiActuel >
+                0
+            ) {
+
+                await this.attendre(
+                    delaiActuel
+                );
+
+            }
+
+        }
+
+
+        /*---------------------------------------------
+         DERNIÈRE VÉRIFICATION DE SÉQUENCE
+        ---------------------------------------------*/
+
+        if (
+            sequence !==
+                this.sequenceAffichage
+        ) {
+
+            message.remove();
+
+
+            return null;
+
+        }
+
+
+        /*---------------------------------------------
+         HTML FINAL
+
+         Si le message autorise explicitement le HTML,
+         celui-ci n'est injecté qu'après la fin de
+         l'écriture progressive.
+        ---------------------------------------------*/
+
+        if (
+            options.html ===
+                true
+        ) {
+
+            bulle.innerHTML =
+                contenuPrepare;
+
+        }
+
+
+        /*---------------------------------------------
+         ACCESSIBILITÉ
+        ---------------------------------------------*/
+
+        if (
+            type ===
+                "narrateur" ||
+            type ===
+                "narration"
+        ) {
+
+            bulle.setAttribute(
+                "aria-label",
+                contenuPrepare
+            );
+
+        }
+        else {
+
+            bulle.setAttribute(
+                "aria-label",
+                `${nomPersonnage} : ${contenuPrepare}`
+            );
+
+        }
+
+
+        /*---------------------------------------------
+         GALERIE APRÈS ÉCRITURE PROGRESSIVE
+
+         C'est volontairement ici et PAS au début.
+
+         Un média associé au dialogue n'est donc
+         débloqué que si :
+         - l'indicateur d'écriture est terminé ;
+         - le texte entier est apparu ;
+         - aucune autre scène n'a remplacé celle-ci.
+
+         Exemple :
+
+         {
+             "personnage": "narrateur",
+             "texte": "Eva ne recule pas.",
+             "galerie":
+                 "chap11BaiserFrontAccepte"
+         }
+        ---------------------------------------------*/
+
+        this.gererGalerieDialogue(
+            options
+        );
+
+
+        /*---------------------------------------------
+         ANIMATIONS SUPPLÉMENTAIRES
+        ---------------------------------------------*/
+
+        if (
+            typeof animationManager !==
+                "undefined" &&
+            animationManager !==
+                null
+        ) {
+
+            try {
+
+                if (
+                    type ===
+                        "joueur" &&
+                    typeof animationManager
+                        .envoi ===
+                        "function"
+                ) {
+
+                    animationManager
+                        .envoi(
+                            message
+                        );
+
+                }
+                else if (
+                    type !==
+                        "joueur" &&
+                    typeof animationManager
+                        .reception ===
+                        "function"
+                ) {
+
+                    animationManager
+                        .reception(
+                            message
+                        );
+
+                }
+
+            }
+            catch (
+                erreur
+            ) {
+
+                console.error(
+                    "dialogue.js : erreur animation du message progressif :",
+                    erreur
+                );
+
+            }
+
+        }
+
+
+        /*---------------------------------------------
+         ÉVÉNEMENT PERSONNALISÉ
+        ---------------------------------------------*/
+
+        try {
+
+            document.dispatchEvent(
+
+                new CustomEvent(
+                    "dialogueAffiche",
+                    {
+
+                        detail: {
+
+                            personnage:
+                                type,
+
+                            texte:
+                                contenuPrepare,
+
+                            options:
+                                options,
+
+                            element:
+                                message,
+
+                            progressif:
+                                true
+
+                        }
+
+                    }
+                )
+
+            );
+
+        }
+        catch (
+            erreur
+        ) {
+
+            /*
+             Pas bloquant.
+            */
+
+        }
+
+
+        /*---------------------------------------------
+         DERNIER DÉFILEMENT
+        ---------------------------------------------*/
+
+        this.defiler();
+
+
+        return message;
+
+    },
+
+
+    /*=====================================================
+        VÉRIFIER SI UNE CONDITION SIMPLE EST SATISFAITE
+
+        Permet aux dialogues d'avoir éventuellement
+        une condition locale.
+
+        Exemple :
+
+        "condition": {
+            "relationEva": {
+                "min": 5
+            }
+        }
+    =====================================================*/
+
+    verifierConditionMessage(
+        condition
+    ) {
+
+        if (
+            !condition
+        ) {
+
+            return true;
+
+        }
+
+
+        if (
+            typeof condition !==
+                "object"
+        ) {
+
+            return true;
+
+        }
+
+
+        if (
+            typeof moteur !==
+                "undefined" &&
+            moteur !==
+                null &&
+            typeof moteur
+                .verifierObjetCondition ===
+                "function"
+        ) {
+
+            try {
+
+                return moteur
+                    .verifierObjetCondition(
+                        condition
+                    );
+
+            }
+            catch (
+                erreur
+            ) {
+
+                console.error(
+                    "dialogue.js : erreur pendant la vérification d'une condition :",
+                    erreur
+                );
+
+            }
+
+        }
+
+
+        /*
+         En l'absence du moteur, on ne bloque pas
+         arbitrairement le dialogue.
+        */
+
+        return true;
+
+    },
+
+
+    /*=====================================================
+        VÉRIFIER SI UN MESSAGE DOIT ÊTRE AFFICHÉ
+    =====================================================*/
+
+    messageEstDisponible(
+        message
+    ) {
+
+        if (
+            !message ||
+            typeof message !==
+                "object"
+        ) {
+
+            return false;
+
+        }
+
+
+        /*---------------------------------------------
+         MESSAGE DÉSACTIVÉ
+        ---------------------------------------------*/
+
+        if (
+            message.actif ===
+                false
+        ) {
+
+            return false;
+
+        }
+
+
+        /*---------------------------------------------
+         CONDITION SIMPLE
+        ---------------------------------------------*/
+
+        if (
+            message.condition
+        ) {
+
+            return this
+                .verifierConditionMessage(
+                    message.condition
+                );
+
+        }
+
+
+        return true;
+
+    },
+
+
+    /*=====================================================
+        APPLIQUER LES EFFETS D'UN MESSAGE
+
+        Exemple :
+
+        {
+            "effet": {
+                "confianceEva": 1
+            }
+        }
+
+        Le moteur reste responsable de la modification
+        réelle de l'état du joueur.
+    =====================================================*/
+
+    appliquerEffetsMessage(
+        message
+    ) {
+
+        if (
+            !message ||
+            typeof message !==
+                "object" ||
+            !message.effet ||
+            typeof message.effet !==
+                "object"
+        ) {
+
+            return false;
+
+        }
+
+
+        if (
+            typeof moteur ===
+                "undefined" ||
+            moteur ===
+                null ||
+            typeof moteur
+                .appliquerEffets !==
+                "function"
+        ) {
+
+            return false;
+
+        }
+
+
+        try {
+
+            moteur
+                .appliquerEffets(
+                    message.effet
+                );
+
+
+            if (
+                typeof moteur
+                    .verifierSucces ===
+                    "function"
+            ) {
+
+                moteur
+                    .verifierSucces();
+
+            }
+
+
+            if (
+                typeof moteur
+                    .sauvegarder ===
+                    "function"
+            ) {
+
+                moteur
+                    .sauvegarder();
+
+            }
+
+
+            return true;
+
+        }
+        catch (
+            erreur
+        ) {
+
+            console.error(
+                "dialogue.js : erreur pendant l'application des effets du message :",
+                erreur
+            );
+
+
+            return false;
+
+        }
+
+    },
+        /*=====================================================
+        ÉCRIRE UN MESSAGE PROGRESSIVEMENT
+
+        Cette méthode est utilisée lorsqu'un message
+        doit apparaître caractère par caractère.
+
+        Le système conserve :
+        - l'indicateur d'écriture ;
+        - les délais de ponctuation ;
+        - l'annulation lors d'un changement de scène ;
+        - les sons ;
+        - les animations ;
+        - la galerie.
+    =====================================================*/
+
+    async ecrireProgressivement(
+        contenu,
+        personnage = "narrateur",
+        vitesse = 20,
+        options = {}
+    ) {
+
+        if (
+            !this.conteneur
+        ) {
+
+            this.initialiser();
+
+        }
+
+
+        if (
+            !this.conteneur
+        ) {
+
+            return null;
+
+        }
+
+
+        /*---------------------------------------------
+         FOND ASSOCIÉ AU MESSAGE
+
+         Utile lorsque ecrireProgressivement()
+         est appelé directement sans passer
+         par afficherScene().
+        ---------------------------------------------*/
+
+        if (
+            options &&
+            typeof options ===
+                "object" &&
+
+            typeof moteur !==
+                "undefined" &&
+
+            moteur !==
+                null &&
+
+            typeof moteur
+                .gererFondDialogue ===
+                "function"
+        ) {
+
+            try {
+
+                moteur
+                    .gererFondDialogue(
+                        options
+                    );
+
+            }
+            catch (
+                erreur
+            ) {
+
+                console.error(
+                    "dialogue.js : erreur pendant le changement de fond du message progressif :",
+                    erreur
+                );
+
+            }
+
+        }
+
+
+        /*---------------------------------------------
+         PRÉPARATION DU TEXTE
+        ---------------------------------------------*/
+
+        const contenuPrepare =
+            this.remplacerVariables(
+                contenu
+            );
+
+
+        if (
+            !contenuPrepare
+        ) {
+
+            return null;
+
+        }
+
+
+        /*---------------------------------------------
+         PERSONNAGE
+        ---------------------------------------------*/
+
+        const type =
+            this.normaliserPersonnage(
+                personnage
+            );
+
+
+        /*---------------------------------------------
+         SÉQUENCE ACTIVE
+
+         Si une autre scène démarre,
+         sequenceAffichage change et cette écriture
+         est immédiatement abandonnée.
+        ---------------------------------------------*/
+
+        const sequence =
+            this.sequenceAffichage;
+
+
+        /*---------------------------------------------
+         INDICATEUR D'ÉCRITURE
+        ---------------------------------------------*/
+
+        const afficherEcriture =
+
+            options.afficherEcriture ===
+                true ||
+
+            (
+
+                options.afficherEcriture !==
+                    false &&
+
+                type !==
+                    "narrateur" &&
+
+                type !==
+                    "narration" &&
+
+                type !==
+                    "pensee" &&
+
+                type !==
+                    "systeme"
+
+            );
+
+
+        if (
+            afficherEcriture
+        ) {
+
+            const duree =
+                this.calculerDureeEcriture(
+                    contenuPrepare,
+                    options
+                );
+
+
+            const termine =
+                await this
+                    .afficherIndicateurEcriture(
+                        personnage,
+                        duree,
+                        sequence
+                    );
+
+
+            if (
+                !termine
+            ) {
+
+                return null;
+
+            }
+
+        }
+
+
+        /*---------------------------------------------
+         VÉRIFICATION AVANT CRÉATION DU MESSAGE
+        ---------------------------------------------*/
+
+        if (
+            sequence !==
+                this.sequenceAffichage
+        ) {
+
+            return null;
+
+        }
+
+
+        /*---------------------------------------------
+         CONTENEUR PRINCIPAL
+        ---------------------------------------------*/
+
+        const message =
+            document.createElement(
+                "div"
+            );
+
+
+        message.classList.add(
+            "message",
+            type
+        );
+
+
+        /*---------------------------------------------
+         JOUEUR / AUTRES PERSONNAGES
+        ---------------------------------------------*/
+
+        if (
+            type ===
+                "joueur"
+        ) {
+
+            message.classList.add(
+                "envoye"
+            );
+
+        }
+        else {
+
+            message.classList.add(
+                "recu"
+            );
+
+        }
+
+
+        /*---------------------------------------------
+         CLASSE PERSONNALISÉE
+        ---------------------------------------------*/
+
+        if (
+            typeof options.classe ===
+                "string" &&
+            options.classe.trim() !==
+                ""
+        ) {
+
+            options.classe
+                .trim()
+                .split(
+                    /\s+/
+                )
+                .forEach(
+                    classe => {
+
+                        if (
+                            classe
+                        ) {
+
+                            message
+                                .classList
+                                .add(
+                                    classe
+                                );
+
+                        }
+
+                    }
+                );
+
+        }
+
+
+        /*---------------------------------------------
+         MESSAGE IMPORTANT
+        ---------------------------------------------*/
+
+        if (
+            options.important ===
+                true
+        ) {
+
+            message.classList.add(
+                "important"
+            );
+
+        }
+
+
+        /*---------------------------------------------
+         MESSAGE SECRET
+        ---------------------------------------------*/
+
+        if (
+            options.secret ===
+                true
+        ) {
+
+            message.classList.add(
+                "secret"
+            );
+
+        }
+
+
+        /*---------------------------------------------
+         MESSAGE SYSTÈME
+        ---------------------------------------------*/
+
+        if (
+            type ===
+                "systeme"
+        ) {
+
+            message.classList.add(
+                "message-systeme"
+            );
+
+        }
+
+
+        /*---------------------------------------------
+         NARRATION
+        ---------------------------------------------*/
+
+        if (
+            type ===
+                "narrateur" ||
+            type ===
+                "narration"
+        ) {
+
+            message.classList.add(
+                "narration"
+            );
+
+        }
+
+
+        /*---------------------------------------------
+         NOM DU PERSONNAGE
+        ---------------------------------------------*/
+
+        const nomPersonnage =
+            this.obtenirNomPersonnage(
+                type
+            );
+
+
+        if (
+            nomPersonnage &&
+            type !==
+                "narrateur" &&
+            type !==
+                "narration" &&
+            type !==
+                "pensee"
+        ) {
+
+            const nom =
+                document.createElement(
+                    "div"
+                );
+
+
+            nom.classList.add(
+                "nom"
+            );
+
+
+            nom.textContent =
+                nomPersonnage;
+
+
+            message.appendChild(
+                nom
+            );
+
+        }
+
+
+        /*---------------------------------------------
+         BULLE VIDE
+        ---------------------------------------------*/
+
+        const bulle =
+            document.createElement(
+                "div"
+            );
+
+
+        bulle.classList.add(
+            "bulle"
+        );
+
+
+        message.appendChild(
+            bulle
+        );
+
+
+        /*---------------------------------------------
+         AJOUT AU DOM
+        ---------------------------------------------*/
+
+        this.conteneur.appendChild(
+            message
+        );
+
+
+        /*---------------------------------------------
+         SON DU MESSAGE
+
+         Le son est joué une seule fois au moment
+         où la bulle commence réellement à apparaître.
+        ---------------------------------------------*/
+
+        this.jouerSonDialogue(
+            {
+
+                ...options,
+
+                personnage:
+
+                    options.personnage ||
+
+                    options.type ||
+
+                    personnage
+
+            }
+        );
+
+
+        /*---------------------------------------------
+         NOTIFICATION ÉVENTUELLE
+        ---------------------------------------------*/
+
+        this.jouerSonNotification(
+            options
+        );
+
+
+        /*---------------------------------------------
+         PREMIER DÉFILEMENT
+        ---------------------------------------------*/
+
+        this.defiler();
+
+
+        /*---------------------------------------------
+         VITESSE D'ÉCRITURE
+
+         Plus la valeur est basse,
+         plus le texte apparaît rapidement.
+        ---------------------------------------------*/
+
+        let delai =
+            Number(
+                vitesse
+            );
+
+
+        if (
+            !Number.isFinite(
+                delai
+            ) ||
+            delai <
+                0
+        ) {
+
+            delai =
+                20;
+
+        }
+
+
+        /*
+         Le JSON peut également définir :
+
+         "vitesseEcriture": 15
+        */
+
+        if (
+            Number.isFinite(
+                Number(
+                    options.vitesseEcriture
+                )
+            )
+        ) {
+
+            delai =
+                Math.max(
+                    0,
+                    Number(
+                        options.vitesseEcriture
+                    )
+                );
+
+        }
+
+
+        /*---------------------------------------------
+         TEXTE EN COURS
+        ---------------------------------------------*/
+
+        let texteAffiche =
+            "";
+
+
+        /*---------------------------------------------
+         ÉCRITURE CARACTÈRE PAR CARACTÈRE
+        ---------------------------------------------*/
+
+        for (
+            let index = 0;
+            index < contenuPrepare.length;
+            index += 1
+        ) {
+
+            /*-----------------------------------------
+             ANNULATION SI NOUVELLE SCÈNE
+            -----------------------------------------*/
+
+            if (
+                sequence !==
+                    this.sequenceAffichage
+            ) {
+
+                message.remove();
+
+
+                return null;
+
+            }
+
+
+            const caractere =
+                contenuPrepare[
+                    index
+                ];
+
+
+            texteAffiche +=
+                caractere;
+
+
+            /*-----------------------------------------
+             AFFICHAGE
+            -----------------------------------------*/
+
+            if (
+                options.html ===
+                    true
+            ) {
+
+                /*
+                 Pour éviter de casser les balises HTML
+                 en cours d'écriture, le mode progressif
+                 reste volontairement en texte simple.
+
+                 Le HTML complet sera appliqué une fois
+                 l'écriture terminée.
+                */
+
+                bulle.textContent =
+                    texteAffiche;
+
+            }
+            else {
+
+                bulle.textContent =
+                    texteAffiche;
+
+            }
+
+
+            this.defiler();
+
+
+            /*-----------------------------------------
+             PAUSES DE PONCTUATION
+            -----------------------------------------*/
+
+            let delaiActuel =
+                delai;
+
+
+            if (
+                caractere ===
+                    "." ||
+                caractere ===
+                    "!" ||
+                caractere ===
+                    "?"
+            ) {
+
+                delaiActuel +=
+                    180;
+
+            }
+            else if (
+                caractere ===
+                    "," ||
+                caractere ===
+                    ";" ||
+                caractere ===
+                    ":"
+            ) {
+
+                delaiActuel +=
+                    80;
+
+            }
+            else if (
+                caractere ===
+                    "\n"
+            ) {
+
+                delaiActuel +=
+                    100;
+
+            }
+
+
+            if (
+                delaiActuel >
+                0
+            ) {
+
+                await this.attendre(
+                    delaiActuel
+                );
+
+            }
+
+        }
+
+
+        /*---------------------------------------------
+         DERNIÈRE VÉRIFICATION DE SÉQUENCE
+        ---------------------------------------------*/
+
+        if (
+            sequence !==
+                this.sequenceAffichage
+        ) {
+
+            message.remove();
+
+
+            return null;
+
+        }
+
+
+        /*---------------------------------------------
+         HTML FINAL
+
+         Si le message autorise explicitement le HTML,
+         celui-ci n'est injecté qu'après la fin de
+         l'écriture progressive.
+        ---------------------------------------------*/
+
+        if (
+            options.html ===
+                true
+        ) {
+
+            bulle.innerHTML =
+                contenuPrepare;
+
+        }
+
+
+        /*---------------------------------------------
+         ACCESSIBILITÉ
+        ---------------------------------------------*/
+
+        if (
+            type ===
+                "narrateur" ||
+            type ===
+                "narration"
+        ) {
+
+            bulle.setAttribute(
+                "aria-label",
+                contenuPrepare
+            );
+
+        }
+        else {
+
+            bulle.setAttribute(
+                "aria-label",
+                `${nomPersonnage} : ${contenuPrepare}`
+            );
+
+        }
+
+
+        /*---------------------------------------------
+         GALERIE APRÈS ÉCRITURE PROGRESSIVE
+
+         C'est volontairement ici et PAS au début.
+
+         Un média associé au dialogue n'est donc
+         débloqué que si :
+         - l'indicateur d'écriture est terminé ;
+         - le texte entier est apparu ;
+         - aucune autre scène n'a remplacé celle-ci.
+
+         Exemple :
+
+         {
+             "personnage": "narrateur",
+             "texte": "Eva ne recule pas.",
+             "galerie":
+                 "chap11BaiserFrontAccepte"
+         }
+        ---------------------------------------------*/
+
+        this.gererGalerieDialogue(
+            options
+        );
+
+
+        /*---------------------------------------------
+         ANIMATIONS SUPPLÉMENTAIRES
+        ---------------------------------------------*/
+
+        if (
+            typeof animationManager !==
+                "undefined" &&
+            animationManager !==
+                null
+        ) {
+
+            try {
+
+                if (
+                    type ===
+                        "joueur" &&
+                    typeof animationManager
+                        .envoi ===
+                        "function"
+                ) {
+
+                    animationManager
+                        .envoi(
+                            message
+                        );
+
+                }
+                else if (
+                    type !==
+                        "joueur" &&
+                    typeof animationManager
+                        .reception ===
+                        "function"
+                ) {
+
+                    animationManager
+                        .reception(
+                            message
+                        );
+
+                }
+
+            }
+            catch (
+                erreur
+            ) {
+
+                console.error(
+                    "dialogue.js : erreur animation du message progressif :",
+                    erreur
+                );
+
+            }
+
+        }
+
+
+        /*---------------------------------------------
+         ÉVÉNEMENT PERSONNALISÉ
+        ---------------------------------------------*/
+
+        try {
+
+            document.dispatchEvent(
+
+                new CustomEvent(
+                    "dialogueAffiche",
+                    {
+
+                        detail: {
+
+                            personnage:
+                                type,
+
+                            texte:
+                                contenuPrepare,
+
+                            options:
+                                options,
+
+                            element:
+                                message,
+
+                            progressif:
+                                true
+
+                        }
+
+                    }
+                )
+
+            );
+
+        }
+        catch (
+            erreur
+        ) {
+
+            /*
+             Pas bloquant.
+            */
+
+        }
+
+
+        /*---------------------------------------------
+         DERNIER DÉFILEMENT
+        ---------------------------------------------*/
+
+        this.defiler();
+
+
+        return message;
+
+    },
+
+
+    /*=====================================================
+        VÉRIFIER SI UNE CONDITION SIMPLE EST SATISFAITE
+
+        Permet aux dialogues d'avoir éventuellement
+        une condition locale.
+
+        Exemple :
+
+        "condition": {
+            "relationEva": {
+                "min": 5
+            }
+        }
+    =====================================================*/
+
+    verifierConditionMessage(
+        condition
+    ) {
+
+        if (
+            !condition
+        ) {
+
+            return true;
+
+        }
+
+
+        if (
+            typeof condition !==
+                "object"
+        ) {
+
+            return true;
+
+        }
+
+
+        if (
+            typeof moteur !==
+                "undefined" &&
+            moteur !==
+                null &&
+            typeof moteur
+                .verifierObjetCondition ===
+                "function"
+        ) {
+
+            try {
+
+                return moteur
+                    .verifierObjetCondition(
+                        condition
+                    );
+
+            }
+            catch (
+                erreur
+            ) {
+
+                console.error(
+                    "dialogue.js : erreur pendant la vérification d'une condition :",
+                    erreur
+                );
+
+            }
+
+        }
+
+
+        /*
+         En l'absence du moteur, on ne bloque pas
+         arbitrairement le dialogue.
+        */
+
+        return true;
+
+    },
+
+
+    /*=====================================================
+        VÉRIFIER SI UN MESSAGE DOIT ÊTRE AFFICHÉ
+    =====================================================*/
+
+    messageEstDisponible(
+        message
+    ) {
+
+        if (
+            !message ||
+            typeof message !==
+                "object"
+        ) {
+
+            return false;
+
+        }
+
+
+        /*---------------------------------------------
+         MESSAGE DÉSACTIVÉ
+        ---------------------------------------------*/
+
+        if (
+            message.actif ===
+                false
+        ) {
+
+            return false;
+
+        }
+
+
+        /*---------------------------------------------
+         CONDITION SIMPLE
+        ---------------------------------------------*/
+
+        if (
+            message.condition
+        ) {
+
+            return this
+                .verifierConditionMessage(
+                    message.condition
+                );
+
+        }
+
+
+        return true;
+
+    },
+
+
+    /*=====================================================
+        APPLIQUER LES EFFETS D'UN MESSAGE
+
+        Exemple :
+
+        {
+            "effet": {
+                "confianceEva": 1
+            }
+        }
+
+        Le moteur reste responsable de la modification
+        réelle de l'état du joueur.
+    =====================================================*/
+
+    appliquerEffetsMessage(
+        message
+    ) {
+
+        if (
+            !message ||
+            typeof message !==
+                "object" ||
+            !message.effet ||
+            typeof message.effet !==
+                "object"
+        ) {
+
+            return false;
+
+        }
+
+
+        if (
+            typeof moteur ===
+                "undefined" ||
+            moteur ===
+                null ||
+            typeof moteur
+                .appliquerEffets !==
+                "function"
+        ) {
+
+            return false;
+
+        }
+
+
+        try {
+
+            moteur
+                .appliquerEffets(
+                    message.effet
+                );
+
+
+            if (
+                typeof moteur
+                    .verifierSucces ===
+                    "function"
+            ) {
+
+                moteur
+                    .verifierSucces();
+
+            }
+
+
+            if (
+                typeof moteur
+                    .sauvegarder ===
+                    "function"
+            ) {
+
+                moteur
+                    .sauvegarder();
+
+            }
+
+
+            return true;
+
+        }
+        catch (
+            erreur
+        ) {
+
+            console.error(
+                "dialogue.js : erreur pendant l'application des effets du message :",
+                erreur
+            );
+
+
+            return false;
+
+        }
+
+    },
+        /*=====================================================
+        AFFICHER UNE LISTE DE DIALOGUES
+
+        Compatible avec moteur.js :
+
+        dialogueManager.afficherListe(
+            dialogues,
+            joueur,
+            callback
+        );
+    =====================================================*/
+
+    async afficherListe(
+        dialogues,
+        joueur = null,
+        callback = null
+    ) {
+
+        if (
+            !Array.isArray(
+                dialogues
+            )
+        ) {
+
+            if (
+                typeof callback ===
+                    "function"
+            ) {
+
+                callback();
+
+            }
+
+            return;
+
+        }
+
+
+        const sequence =
+            ++this.sequenceAffichage;
+
+
+        for (
+            const message
+            of dialogues
+        ) {
+
+            /*---------------------------------------------
+             INTERRUPTION PAR UNE NOUVELLE SCÈNE
+            ---------------------------------------------*/
+
+            if (
+                sequence !==
+                    this.sequenceAffichage
+            ) {
+
+                return;
+
+            }
+
+
+            if (
+                !message ||
+                typeof message !==
+                    "object"
+            ) {
+
+                continue;
+
+            }
+
+
+            /*---------------------------------------------
+             CONDITION LOCALE
+            ---------------------------------------------*/
+
+            if (
+                !this.messageEstDisponible(
+                    message
+                )
+            ) {
+
+                continue;
+
+            }
+
+
+            /*---------------------------------------------
+             FOND DU DIALOGUE
+            ---------------------------------------------*/
+
+            if (
+                typeof moteur !==
+                    "undefined" &&
+                moteur !==
+                    null
+            ) {
+
+                try {
+
+                    if (
+                        typeof moteur
+                            .gererFondDialogue ===
+                            "function"
+                    ) {
+
+                        moteur
+                            .gererFondDialogue(
+                                message
+                            );
+
+                    }
+                    else if (
+                        message.fond &&
+                        typeof moteur
+                            .changerFond ===
+                            "function"
+                    ) {
+
+                        const duree =
+                            typeof moteur
+                                .obtenirDureeTransitionFond ===
+                                "function"
+
+                                ? moteur
+                                    .obtenirDureeTransitionFond(
+                                        message
+                                    )
+
+                                : undefined;
+
+
+                        moteur
+                            .changerFond(
+                                message.fond,
+                                duree
+                            );
+
+                    }
+
+                }
+                catch (
+                    erreur
+                ) {
+
+                    console.error(
+                        "dialogue.js : erreur fond dialogue :",
+                        erreur
+                    );
+
+                }
+
+            }
+
+
+            /*---------------------------------------------
+             TEXTE
+            ---------------------------------------------*/
+
+            const texte =
+                this.preparerTexteMessage(
+                    message
+                );
+
+
+            if (
+                !texte
+            ) {
+
+                /*
+                 Un message sans texte peut quand même
+                 porter un effet.
+                */
+
+                this.appliquerEffetsMessage(
+                    message
+                );
+
+
+                continue;
+
+            }
+
+
+            const personnage =
+
+                message.personnage ||
+
+                message.type ||
+
+                "narrateur";
+
+
+            const type =
+                this.normaliserPersonnage(
+                    personnage
+                );
+
+
+            /*---------------------------------------------
+             ÉCRITURE PROGRESSIVE EXPLICITE
+            ---------------------------------------------*/
+
+            if (
+                message.progressif ===
+                    true ||
+                message.ecritureProgressive ===
+                    true
+            ) {
+
+                await this
+                    .ecrireProgressivement(
+                        texte,
+                        personnage,
+                        message.vitesseEcriture ??
+                            20,
+                        message
+                    );
+
+
+                if (
+                    sequence !==
+                        this.sequenceAffichage
+                ) {
+
+                    return;
+
+                }
+
+
+                this.appliquerEffetsMessage(
+                    message
+                );
+
+
+                const pauseProgressive =
+                    this.obtenirPauseApresMessage(
+                        message
+                    );
+
+
+                if (
+                    pauseProgressive >
+                    0
+                ) {
+
+                    await this.attendre(
+                        pauseProgressive
+                    );
+
+                }
+
+
+                continue;
+
+            }
+
+
+            /*---------------------------------------------
+             INDICATEUR D'ÉCRITURE
+            ---------------------------------------------*/
+
+            const afficherEcriture =
+
+                message.afficherEcriture ===
+                    true ||
+
+                (
+
+                    message.afficherEcriture !==
+                        false &&
+
+                    type !==
+                        "narrateur" &&
+
+                    type !==
+                        "narration" &&
+
+                    type !==
+                        "pensee" &&
+
+                    type !==
+                        "systeme"
+
+                );
+
+
+            if (
+                afficherEcriture
+            ) {
+
+                const duree =
+                    this.calculerDureeEcriture(
+                        texte,
+                        message
+                    );
+
+
+                const termine =
+                    await this
+                        .afficherIndicateurEcriture(
+                            personnage,
+                            duree,
+                            sequence
+                        );
+
+
+                if (
+                    !termine
+                ) {
+
+                    return;
+
+                }
+
+            }
+
+
+            /*---------------------------------------------
+             DÉLAI DE NARRATION
+
+             Un délai peut être défini explicitement :
+
+             "delai": 1200
+
+             ou :
+
+             "delaiNarration": 1200
+            ---------------------------------------------*/
+
+            const delaiAvant =
+                this.obtenirDelaiAvantMessage(
+                    message,
+                    type
+                );
+
+
+            if (
+                delaiAvant >
+                0
+            ) {
+
+                await this.attendre(
+                    delaiAvant
+                );
+
+
+                if (
+                    sequence !==
+                        this.sequenceAffichage
+                ) {
+
+                    return;
+
+                }
+
+            }
+
+
+            /*---------------------------------------------
+             AJOUT DU MESSAGE
+            ---------------------------------------------*/
+
+            this.ajouterMessage(
+                texte,
+                personnage,
+                message
+            );
+
+
+            /*---------------------------------------------
+             EFFETS DU MESSAGE
+            ---------------------------------------------*/
+
+            this.appliquerEffetsMessage(
+                message
+            );
+
+
+            /*---------------------------------------------
+             PAUSE APRÈS MESSAGE
+            ---------------------------------------------*/
+
+            const pause =
+                this.obtenirPauseApresMessage(
+                    message
+                );
+
+
+            if (
+                pause >
+                0
+            ) {
+
+                await this.attendre(
+                    pause
+                );
+
+            }
+
+        }
+
+
+        /*---------------------------------------------
+         FIN DE LA LISTE
+        ---------------------------------------------*/
+
+        if (
+            sequence !==
+                this.sequenceAffichage
+        ) {
+
+            return;
+
+        }
+
+
+        if (
+            typeof callback ===
+                "function"
+        ) {
+
+            try {
+
+                callback();
+
+            }
+            catch (
+                erreur
+            ) {
+
+                console.error(
+                    "dialogue.js : erreur dans le callback de fin :",
+                    erreur
+                );
+
+            }
+
+        }
+
+    },
+
+
+    /*=====================================================
+        AFFICHER PLUSIEURS DIALOGUES
+
+        Variante Promise utilisée par certaines
+        versions du moteur.
+    =====================================================*/
+
+    async afficherDialogues(
+        dialogues,
+        joueur = null
+    ) {
+
+        return new Promise(
+            resolve => {
+
+                this.afficherListe(
+                    dialogues,
+                    joueur,
+                    resolve
+                );
+
+            }
+        );
+
+    },
+
+
+    /*=====================================================
+        AFFICHER UN SEUL MESSAGE
+
+        Compatible avec :
+
+        dialogueManager.afficher(
+            message,
+            joueur
+        );
+    =====================================================*/
+
+    async afficher(
+        message,
+        joueur = null
+    ) {
+
+        if (
+            !message
+        ) {
+
+            return null;
+
+        }
+
+
+        /*---------------------------------------------
+         CHAÎNE SIMPLE
+        ---------------------------------------------*/
+
+        if (
+            typeof message ===
+                "string"
+        ) {
+
+            return this.ajouterMessage(
+                message,
+                "narrateur",
+                {}
+            );
+
+        }
+
+
+        if (
+            typeof message !==
+                "object"
+        ) {
+
+            return null;
+
+        }
+
+
+        /*---------------------------------------------
+         CONDITION
+        ---------------------------------------------*/
+
+        if (
+            !this.messageEstDisponible(
+                message
+            )
+        ) {
+
+            return null;
+
+        }
+
+
+        /*---------------------------------------------
+         TEXTE
+        ---------------------------------------------*/
+
+        const texte =
+            this.preparerTexteMessage(
+                message
+            );
+
+
+        if (
+            !texte
+        ) {
+
+            this.appliquerEffetsMessage(
+                message
+            );
+
+
+            return null;
+
+        }
+
+
+        const personnage =
+
+            message.personnage ||
+
+            message.type ||
+
+            "narrateur";
+
+
+        /*---------------------------------------------
+         ÉCRITURE PROGRESSIVE
+        ---------------------------------------------*/
+
+        if (
+            message.progressif ===
+                true ||
+            message.ecritureProgressive ===
+                true
+        ) {
+
+            const resultat =
+                await this
+                    .ecrireProgressivement(
+                        texte,
+                        personnage,
+                        message.vitesseEcriture ??
+                            20,
+                        message
+                    );
+
+
+            this.appliquerEffetsMessage(
+                message
+            );
+
+
+            return resultat;
+
+        }
+
+
+        /*---------------------------------------------
+         MESSAGE NORMAL
+        ---------------------------------------------*/
+
+        const resultat =
+            this.ajouterMessage(
+                texte,
+                personnage,
+                message
+            );
+
+
+        this.appliquerEffetsMessage(
+            message
+        );
+
+
+        return resultat;
+
+    },
+
+
+    /*=====================================================
+        OBTENIR LE DÉLAI AVANT UN MESSAGE
+    =====================================================*/
+
+    obtenirDelaiAvantMessage(
+        message,
+        personnage = "narrateur"
+    ) {
+
+        if (
+            !message ||
+            typeof message !==
+                "object"
+        ) {
+
+            return 0;
+
+        }
+
+
+        const valeurs = [
+
+            message.delaiAvant,
+
+            message.delai,
+
+            message.delay,
+
+            message.tempsAvant
+
+        ];
+
+
+        const type =
+            this.normaliserPersonnage(
+                personnage
+            );
+
+
+        /*
+         Les narrations peuvent posséder
+         leur propre propriété.
+        */
+
+        if (
+            type ===
+                "narrateur" ||
+            type ===
+                "narration"
+        ) {
+
+            valeurs.unshift(
+                message.delaiNarration
+            );
+
+        }
+
+
+        for (
+            const valeur
+            of valeurs
+        ) {
+
+            const nombre =
+                Number(
+                    valeur
+                );
+
+
+            if (
+                Number.isFinite(
+                    nombre
+                ) &&
+                nombre >= 0
+            ) {
+
+                return nombre;
+
+            }
+
+        }
+
+
+        return 0;
+
+    },
+
+
+    /*=====================================================
+        OBTENIR LA PAUSE APRÈS UN MESSAGE
+    =====================================================*/
+
+    obtenirPauseApresMessage(
+        message
+    ) {
+
+        if (
+            !message ||
+            typeof message !==
+                "object"
+        ) {
+
+            return this
+                .pauseEntreMessages;
+
+        }
+
+
+        const valeurs = [
+
+            message.pauseApres,
+
+            message.delaiApres,
+
+            message.pause,
+
+            message.afterDelay
+
+        ];
+
+
+        for (
+            const valeur
+            of valeurs
+        ) {
+
+            const nombre =
+                Number(
+                    valeur
+                );
+
+
+            if (
+                Number.isFinite(
+                    nombre
+                ) &&
+                nombre >= 0
+            ) {
+
+                return nombre;
+
+            }
+
+        }
+
+
+        return this
+            .pauseEntreMessages;
+
+    },
+
+
+    /*=====================================================
+        GÉRER LE FOND D'UN MESSAGE
+
+        Cette fonction peut être utilisée directement
+        si le moteur ne possède pas gererFondDialogue().
+    =====================================================*/
+
+    gererFondMessage(
+        message
+    ) {
+
+        if (
+            !message ||
+            typeof message !==
+                "object" ||
+            !message.fond
+        ) {
+
+            return false;
+
+        }
+
+
+        if (
+            typeof moteur ===
+                "undefined" ||
+            moteur ===
+                null
+        ) {
+
+            return false;
+
+        }
+
+
+        try {
+
+            if (
+                typeof moteur
+                    .gererFondDialogue ===
+                    "function"
+            ) {
+
+                moteur
+                    .gererFondDialogue(
+                        message
+                    );
+
+
+                return true;
+
+            }
+
+
+            if (
+                typeof moteur
+                    .changerFond ===
+                    "function"
+            ) {
+
+                let duree =
+                    undefined;
+
+
+                if (
+                    typeof moteur
+                        .obtenirDureeTransitionFond ===
+                        "function"
+                ) {
+
+                    duree =
+                        moteur
+                            .obtenirDureeTransitionFond(
+                                message
+                            );
+
+                }
+
+
+                moteur
+                    .changerFond(
+                        message.fond,
+                        duree
+                    );
+
+
+                return true;
+
+            }
+
+        }
+        catch (
+            erreur
+        ) {
+
+            console.error(
+                "dialogue.js : erreur pendant gererFondMessage() :",
+                erreur
+            );
+
+        }
+
+
+        return false;
+
+    },
+
+
+    /*=====================================================
+        TRAITER UN MESSAGE COMPLET
+
+        Fonction utilitaire regroupant :
+        - condition ;
+        - fond ;
+        - affichage ;
+        - effets.
+    =====================================================*/
+
+    async traiterMessage(
+        message
+    ) {
+
+        if (
+            !message ||
+            typeof message !==
+                "object"
+        ) {
+
+            return null;
+
+        }
+
+
+        if (
+            !this.messageEstDisponible(
+                message
+            )
+        ) {
+
+            return null;
+
+        }
+
+
+        this.gererFondMessage(
+            message
+        );
+
+
+        const resultat =
+            await this.afficher(
+                message
+            );
+
+
+        return resultat;
+
+    },
+
+
+    /*=====================================================
+        AFFICHER UNE SCÈNE ET SIGNALER SA FIN
+
+        Variante utilitaire pour les moteurs utilisant
+        une Promise plutôt qu'un callback.
+    =====================================================*/
+
+    async jouerScene(
+        scene
+    ) {
+
+        if (
+            !scene
+        ) {
+
+            return;
+
+        }
+
+
+        const dialogues =
+            Array.isArray(
+                scene.dialogues
+            )
+                ? scene.dialogues
+                : [];
+
+
+        await this.afficherDialogues(
+            dialogues
+        );
+
+    },
+        /*=====================================================
+        ANNULER LA SÉQUENCE ACTUELLE
+
+        Incrémente sequenceAffichage afin de rendre
+        obsolètes :
+        - les indicateurs d'écriture en attente ;
+        - les écritures progressives ;
+        - les pauses entre messages.
+    =====================================================*/
+
+    annulerSequence() {
+
+        this.sequenceAffichage += 1;
+
+    },
+
+
+    /*=====================================================
+        ARRÊTER LES DIALOGUES EN COURS
+    =====================================================*/
+
+    arreter() {
+
+        this.annulerSequence();
+
+        /*
+         Supprime les éventuels indicateurs d'écriture
+         encore présents dans le DOM.
+        */
+
+        document
+            .querySelectorAll(
+                ".message-ecriture"
+            )
+            .forEach(
+                element => {
+
+                    try {
+
+                        element.remove();
+
+                    }
+                    catch (
+                        erreur
+                    ) {
+
+                        /* Rien */
+
+                    }
+
+                }
+            );
+
+    },
+
+
+    /*=====================================================
+        NETTOYER LE GESTIONNAIRE
+    =====================================================*/
+
+    nettoyer() {
+
+        this.arreter();
+
+        this.dernierPersonnageSonore =
+            null;
+
+    },
+
+
+    /*=====================================================
+        RÉINITIALISER COMPLÈTEMENT
+    =====================================================*/
+
+    reinitialiser() {
+
+        this.nettoyer();
+
+
+        if (
+            !this.conteneur
+        ) {
+
+            this.initialiser();
+
+        }
+
+
+        if (
+            this.conteneur
+        ) {
+
+            this.conteneur.innerHTML =
+                "";
+
+        }
+
+    },
+
+
+    /*=====================================================
+        VÉRIFIER SI LE CONTENEUR EXISTE
+    =====================================================*/
+
+    estInitialise() {
+
+        return Boolean(
+            this.conteneur
+        );
+
+    },
+
+
+    /*=====================================================
+        OBTENIR LE CONTENEUR
+    =====================================================*/
+
+    obtenirConteneur() {
+
+        if (
+            !this.conteneur
+        ) {
+
+            this.initialiser();
+
+        }
+
+
+        return this.conteneur;
+
+    },
+
+
+    /*=====================================================
+        OBTENIR LA SÉQUENCE ACTIVE
+    =====================================================*/
+
+    obtenirSequence() {
+
+        return this.sequenceAffichage;
+
+    },
+
+
+    /*=====================================================
+        VÉRIFIER UNE SÉQUENCE
+    =====================================================*/
+
+    sequenceValide(
+        sequence
+    ) {
+
+        return (
+            sequence ===
+            this.sequenceAffichage
+        );
+
+    },
+
+
+    /*=====================================================
+        OBTENIR LA RELATION
+
+        Fonction publique pratique pour le moteur
+        ou pour les tests.
+    =====================================================*/
+
+    obtenirRelation(
+        personnage
+    ) {
+
+        return this
+            .obtenirRelationPersonnage(
+                personnage
+            );
+
+    },
+
+
+    /*=====================================================
+        OBTENIR LA CONFIANCE
+    =====================================================*/
+
+    obtenirConfiance(
+        personnage
+    ) {
+
+        return this
+            .obtenirConfiancePersonnage(
+                personnage
+            );
+
+    },
+
+
+    /*=====================================================
+        OBTENIR LES INFORMATIONS D'UN PERSONNAGE
+    =====================================================*/
+
+    obtenirInformationsPersonnage(
+        personnage
+    ) {
+
+        const type =
+            this.normaliserPersonnage(
+                personnage
+            );
+
+
+        return {
+
+            personnage:
+                type,
+
+            nom:
+                this.obtenirNomPersonnage(
+                    type
+                ),
+
+            relation:
+                this.obtenirRelationPersonnage(
+                    type
+                ),
+
+            niveauRelation:
+                this.obtenirNiveauRelation(
+                    type
+                ),
+
+            confiance:
+                this.obtenirConfiancePersonnage(
+                    type
+                ),
+
+            niveauConfiance:
+                this.obtenirNiveauConfiance(
+                    type
+                )
+
+        };
+
+    },
+
+
+    /*=====================================================
+        TESTER UN MESSAGE
+
+        Utilisable dans la console :
+
+        dialogueManager.testMessage(
+            "eva",
+            "Salut !"
+        );
+    =====================================================*/
+
+    testMessage(
+        personnage = "eva",
+        texte = "Message de test."
+    ) {
+
+        return this.ajouterMessage(
+            texte,
+            personnage,
+            {}
+        );
+
+    },
+
+
+    /*=====================================================
+        TESTER UNE NARRATION
+    =====================================================*/
+
+    testNarration(
+        texte =
+            "Narration de test."
+    ) {
+
+        return this.ajouterNarration(
+            texte
+        );
+
+    },
+
+
+    /*=====================================================
+        TESTER L'ÉCRITURE PROGRESSIVE
+    =====================================================*/
+
+    async testProgressif(
+        personnage =
+            "eva",
+        texte =
+            "Ceci est un message progressif de test."
+    ) {
+
+        return this
+            .ecrireProgressivement(
+                texte,
+                personnage,
+                20,
+                {}
+            );
+
+    },
+
+
+    /*=====================================================
+        TESTER LA GALERIE DEPUIS UN DIALOGUE
+
+        Exemple console :
+
+        dialogueManager.testGalerie(
+            "chap11BaiserFrontAccepte"
+        );
+    =====================================================*/
+
+    testGalerie(
+        id
+    ) {
+
+        if (
+            !id
+        ) {
+
+            return false;
+
+        }
+
+
+        return this
+            .gererGalerieDialogue(
+                {
+                    galerie:
+                        id
+                }
+            );
+
+    },
+
+
+    /*=====================================================
+        TESTER UNE NOTIFICATION DE SUCCÈS
+    =====================================================*/
+
+    testSucces(
+        titre =
+            "Succès de test"
+    ) {
+
+        return this
+            .afficherNotificationSucces(
+                titre,
+                "Notification de test."
+            );
+
+    },
+
+
+    /*=====================================================
+        TESTER UNE INFORMATION
+    =====================================================*/
+
+    testInformation(
+        texte =
+            "Nouvelle information obtenue."
+    ) {
+
+        return this
+            .afficherInformationPersonnage(
+                texte
+            );
+
+    },
+
+
+    /*=====================================================
+        TESTER UN CHOIX IMPORTANT
+    =====================================================*/
+
+    testChoixImportant(
+        texte =
+            "Ce choix pourrait avoir des conséquences."
+    ) {
+
+        return this
+            .afficherChoixImportant(
+                texte
+            );
+
+    },
+
+
+    /*=====================================================
+        AFFICHER DIRECTEMENT UN DIALOGUE JSON
+
+        Pratique pour les tests :
+
+        dialogueManager.testJSON({
+            personnage: "eva",
+            texte: "Salut.",
+            galerie: "mediaTest"
+        });
+    =====================================================*/
+
+    async testJSON(
+        message
+    ) {
+
+        if (
+            !message ||
+            typeof message !==
+                "object"
+        ) {
+
+            console.warn(
+                "dialogue.js : testJSON() nécessite un objet."
+            );
+
+
+            return null;
+
+        }
+
+
+        return this
+            .afficher(
+                message
+            );
+
+    },
+
+
+    /*=====================================================
+        FORCER LE DÉFILEMENT
+    =====================================================*/
+
+    allerEnBas() {
+
+        this.defiler();
+
+    },
+
+
+    /*=====================================================
+        SAVOIR SI UN MESSAGE EST UNE NARRATION
+    =====================================================*/
+
+    estNarration(
+        personnage
+    ) {
+
+        const type =
+            this.normaliserPersonnage(
+                personnage
+            );
+
+
+        return (
+
+            type ===
+                "narrateur" ||
+
+            type ===
+                "narration"
+
+        );
+
+    },
+
+
+    /*=====================================================
+        SAVOIR SI UN MESSAGE VIENT DU JOUEUR
+    =====================================================*/
+
+    estJoueur(
+        personnage
+    ) {
+
+        return (
+
+            this.normaliserPersonnage(
+                personnage
+            ) ===
+            "joueur"
+
+        );
+
+    },
+
+
+    /*=====================================================
+        SAVOIR SI UN MESSAGE EST SYSTÈME
+    =====================================================*/
+
+    estSysteme(
+        personnage
+    ) {
+
+        return (
+
+            this.normaliserPersonnage(
+                personnage
+            ) ===
+            "systeme"
+
+        );
+
+    },
+
+
+    /*=====================================================
+        TRAITER UNE GALERIE SANS AFFICHER DE TEXTE
+
+        Cette méthode peut être utile pour un événement
+        narratif sans bulle :
+
+        dialogueManager.debloquerGalerie(
+            "appelInconnuPremierContact"
+        );
+    =====================================================*/
+
+    debloquerGalerie(
+        galerie
+    ) {
+
+        return this
+            .gererGalerieDialogue(
+                {
+                    galerie:
+                        galerie
+                }
+            );
+
+    },
+
+
+    /*=====================================================
+        COMPATIBILITÉ AVEC CERTAINS ANCIENS APPELS
+
+        afficherMessage(
+            message,
+            joueur
+        )
+    =====================================================*/
+
+    async afficherMessage(
+        message,
+        joueur = null
+    ) {
+
+        return this.afficher(
+            message,
+            joueur
+        );
+
+    },
+
+
+    /*=====================================================
+        COMPATIBILITÉ : AJOUTER TEXTE
+
+        Exemple :
+
+        dialogueManager.ajouterTexte(
+            "Salut",
+            "eva"
+        );
+    =====================================================*/
+
+    ajouterTexte(
+        texte,
+        personnage =
+            "narrateur",
+        options = {}
+    ) {
+
+        return this
+            .ajouterMessage(
+                texte,
+                personnage,
+                options
+            );
+
+    },
+
+
+    /*=====================================================
+        COMPATIBILITÉ : AFFICHER TEXTE
+    =====================================================*/
+
+    afficherTexte(
+        texte,
+        personnage =
+            "narrateur",
+        options = {}
+    ) {
+
+        return this
+            .ajouterMessage(
+                texte,
+                personnage,
+                options
+            );
 
     }
 
@@ -3046,14 +6643,58 @@ const dialogueManager = {
 
 
 /*=========================================================
-    INITIALISATION AUTOMATIQUE
+ INITIALISATION AUTOMATIQUE
 =========================================================*/
 
-window.addEventListener(
+document.addEventListener(
     "DOMContentLoaded",
     () => {
 
-        dialogueManager.initialiser();
+        try {
+
+            dialogueManager
+                .initialiser();
+
+        }
+        catch (
+            erreur
+        ) {
+
+            console.error(
+                "dialogue.js : erreur pendant l'initialisation :",
+                erreur
+            );
+
+        }
+
+    }
+);
+
+
+/*=========================================================
+ NETTOYAGE AVANT CHANGEMENT DE PAGE
+=========================================================*/
+
+window.addEventListener(
+    "beforeunload",
+    () => {
+
+        try {
+
+            dialogueManager
+                .nettoyer();
+
+        }
+        catch (
+            erreur
+        ) {
+
+            /*
+             Ne jamais bloquer le changement
+             ou la fermeture de la page.
+            */
+
+        }
 
     }
 );
