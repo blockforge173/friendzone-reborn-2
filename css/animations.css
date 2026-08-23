@@ -1,10 +1,10 @@
-/*=======================================
-FRIENDZONé REBORN 2
-animations.css
-=========================================*/
+/* =========================================
+   FRIENDZONÉ REBORN
+   animations.css
+========================================= */
 
 
-/* Apparition des messages*/
+/* Apparition des messages */
 
 .message {
 
@@ -12,7 +12,7 @@ animations.css
 
 }
 
-@keyframes apparitionMessage { 
+@keyframes apparitionMessage {
 
     from {
 
@@ -32,7 +32,7 @@ animations.css
 
 
 
-/* Apparition plus douce des narrations*/ 
+/* Apparition plus douce des narrations */
 
 .narration {
 
@@ -42,16 +42,16 @@ animations.css
 
 @keyframes apparitionNarration {
 
-    from { 
+    from {
 
-        opacity : 0;
+        opacity: 0;
         transform: scale(0.98);
 
     }
 
     to {
 
-        opacity: 1; 
+        opacity: 1;
         transform: scale(1);
 
     }
@@ -62,57 +62,57 @@ animations.css
 
 /* Apparition des boutons */
 
-#choix button {
+#choix button{
 
-opacity: 0;
+    opacity:0;
 
-animation: apparitionChoix .35s ease forwards;
-
-}
-
-#choix button:nth-child(1) {
-
-    animation-delay: .10s;
+    animation:apparitionChoix .35s ease forwards;
 
 }
 
-#choix button:nth-child(2) {
+#choix button:nth-child(1){
 
-    animation-delay: .20s;
-
-}
-
-#choix button:nth-child(3) {
-
-    animation-delay: .30s;
+    animation-delay:.10s;
 
 }
 
-#choix button:nth-child(4) {
+#choix button:nth-child(2){
 
-    animation-delay: .40s;
-
-}
-
-#choix button:nth-child(5) {
-
-    animation-delay: .50s;
+    animation-delay:.20s;
 
 }
 
-@keyframes apparitionChoix {
+#choix button:nth-child(3){
 
-    from {
+    animation-delay:.30s;
 
-        opacity: 0;
-        transform: translateY(15px);
+}
+
+#choix button:nth-child(4){
+
+    animation-delay:.40s;
+
+}
+
+#choix button:nth-child(5){
+
+    animation-delay:.50s;
+
+}
+
+@keyframes apparitionChoix{
+
+    from{
+
+        opacity:0;
+        transform:translateY(15px);
 
     }
 
     to{
 
-        opacity: 1;
-        transform: translateY(0);
+        opacity:1;
+        transform:translateY(0);
 
     }
 
@@ -124,23 +124,23 @@ animation: apparitionChoix .35s ease forwards;
 
 #choix button{
 
-    transition: .20s;
+    transition:.20s;
 
 }
 
-#choix button:hover {
+#choix button:hover{
 
-    transform: translateY(-3px) scale(1.02);
+    transform:translateY(-3px) scale(1.02);
 
 }
 
 
 
-/* Clic */ 
+/* Clic */
 
-#choix button:active {
+#choix button:active{
 
-    transform: scale(.96);
+    transform:scale(.96);
 
 }
 
@@ -148,23 +148,23 @@ animation: apparitionChoix .35s ease forwards;
 
 /* Transition de scène */
 
-#conversation {
+#conversation{
 
-    animation: fadeScene .5s;
+    animation:fadeScene .5s;
 
 }
 
-@keyframes fadeScene {
+@keyframes fadeScene{
 
-    from {
+    from{
 
-        opacity: 0;
+        opacity:0;
 
     }
 
     to{
 
-        opacity: 1;
+        opacity:1;
 
     }
 
@@ -172,23 +172,23 @@ animation: apparitionChoix .35s ease forwards;
 
 
 
-/* Transition écran noir */ 
+/* Transition écran noir */
 
-#transition { 
+#transition{
 
-    position: fixed; 
+    position:fixed;
 
-    left: 0;
-    top: 0;
+    left:0;
+    top:0;
 
-    width: 100%;
-    height: 100%;
+    width:100%;
+    height:100%;
 
-    background: black;
+    background:black;
 
-    opacity: 0;
+    opacity:0;
 
-    pointer-events: none;
+    pointer-events:none;
 
     transition:opacity .8s;
 
@@ -198,32 +198,32 @@ animation: apparitionChoix .35s ease forwards;
 
 #transition.actif{
 
-    opacity: 1;
+    opacity:1;
 
 }
 
 
 
-/* Apparition du titre */ 
+/* Apparition du titre */
 
-#titre {
+#titre{
 
     animation:descendreTitre .6s ease;
 
 }
 
-@keyframes descendreTitre {
+@keyframes descendreTitre{
 
-    from {
+    from{
 
-        opacity: 0;
+        opacity:0;
         transform:translateY(-20px);
 
     }
 
     to{
 
-        opacity: 1;
+        opacity:1;
         transform:translateY(0);
 
     }
@@ -232,9 +232,9 @@ animation: apparitionChoix .35s ease forwards;
 
 
 
-/* Effet "sms reçu" */ 
+/* Effet "SMS reçu" */
 
-.recu {
+.recu{
 
     animation:reception .45s cubic-bezier(.22,1,.36,1);
 
@@ -266,11 +266,11 @@ animation: apparitionChoix .35s ease forwards;
 
 
 
-/* Effet "sms envoyé" */ 
+/* Effet "SMS envoyé" */
 
 .envoye{
 
-    animation:envoi .45s cubic-bezier(22,1,36,1);
+    animation:envoi .45s cubic-bezier(.22,1,.36,1);
 
 }
 
@@ -300,11 +300,11 @@ animation: apparitionChoix .35s ease forwards;
 
 
 
-/*Apparition d'un personnage*/
+/* Apparition d'un personnage */
 
 .portrait{
 
-    animation:portrait .45s ease;
+    animation:portrait .4s ease;
 
 }
 
@@ -328,7 +328,7 @@ animation: apparitionChoix .35s ease forwards;
 
 
 
-/* petit effet de secousse */
+/* Petit effet de secousse */
 
 .shake{
 
@@ -360,11 +360,11 @@ animation: apparitionChoix .35s ease forwards;
 @keyframes pulse{
 
     0%{
-       
-        transform:scale(1); 
-    
+
+        transform:scale(1);
+
     }
-    
+
     50%{
 
         transform:scale(1.05);
@@ -376,5 +376,5 @@ animation: apparitionChoix .35s ease forwards;
         transform:scale(1);
 
     }
-    
+
 }
