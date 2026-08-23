@@ -1,9 +1,9 @@
-/*=======================================
-FRIENDZONE REBORN 2
-choix.css
-=========================================*/
+/* ==========================================
+   FRIENDZONÉ REBORN
+   choix.css
+========================================== */
 
-/* Zone de choix */
+/* Zone des choix */
 
 #choix{
 
@@ -14,8 +14,8 @@ choix.css
     flex-direction:column;
 
     gap:12px;
-    
-    padding: 20px;
+
+    padding:20px;
 
     box-sizing:border-box;
 
@@ -39,22 +39,22 @@ choix.css
 
     text-align:left;
 
-    font: size 17px;
+    font-size:17px;
 
     font-family:inherit;
 
     color:white;
 
     background:rgba(255,255,255,0.08);
-    
+
     border:1px solid rgba(255,255,255,0.12);
 
     backdrop-filter:blur(8px);
 
-    transition: 
+    transition:
         transform .20s,
         background .20s,
-        boder-color .20s,
+        border-color .20s,
         box-shadow .20s;
 
 }
@@ -69,15 +69,15 @@ choix.css
 
     background:rgba(255,255,255,0.15);
 
-    border: color #4da3ff;
+    border-color:#4da3ff;
 
-    box-shadow:0 0 15px rgba(77,163,255,35);
+    box-shadow:0 0 15px rgba(77,163,255,.35);
 
 }
 
 
 
-/*Clic */
+/* Clic */
 
 #choix button:active{
 
@@ -99,9 +99,9 @@ choix.css
 
 
 
-/* Icône */ 
+/* Icône */
 
-#choix button:before{
+#choix button::before{
 
     content:"➜";
 
@@ -127,9 +127,9 @@ choix.css
 
 
 
-/* choix romantique*/ 
+/* Choix romantique */
 
-#choix button.romantique{
+#choix button.romance{
 
     border:2px solid #ff6ba5;
 
@@ -139,13 +139,13 @@ choix.css
 
 
 
-/* Choix dangereux */ 
+/* Choix dangereux */
 
 #choix button.danger{
 
-    border:2px solid #ff4d4d;
+    border:2px solid #ff5555;
 
-    background:rgba(255,77,77,.12);
+    background:rgba(255,85,85,.12);
 
 }
 
@@ -163,11 +163,11 @@ choix.css
 
 
 
-/* Apparition*/ 
+/* Apparition */
 
 #choix button{
 
-    opacity: 0;
+    opacity:0;
 
     animation:apparitionChoix .35s forwards;
 
@@ -208,7 +208,7 @@ choix.css
     from{
 
         opacity:0;
-        
+
         transform:translateY(20px);
 
     }
@@ -225,9 +225,9 @@ choix.css
 
 
 
-/* Responsive*/
+/* Responsive */
 
-@media(max-width:90px){
+@media(max-width:900px){
 
     #choix{
 
@@ -247,7 +247,7 @@ choix.css
 
 
 
-/* Très petits écrans*/ 
+/* Très petits écrans */
 
 @media(max-width:600px){
 
@@ -255,7 +255,7 @@ choix.css
 
         font-size:15px;
 
-        padding:14px; 
+        padding:14px;
 
     }
 
